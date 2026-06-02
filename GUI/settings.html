@@ -1,621 +1,473 @@
 {% extends "layout.html" %}
-{% block main %}
+{% block content %}
 
-<main>
-    <br>
-    <div class="container">
-        <form id="settingsForm" action="/settings" method="post" novalidate>
+<form id="settingsForm" action="/settings" method="post" novalidate>
+    <div class="stack gap-20" style="max-width:820px">
 
-            <!-- Reddit Credentials -->
-            <p class="h4">Reddit Credentials</p>
-            <div class="row mb-2">
-                <label for="client_id" class="col-4">Client ID</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-person"></i>
-                        </div>
-                        <input name="client_id" value="{{ data.client_id }}" placeholder="Your Reddit app's client ID"
-                            type="text" class="form-control" data-toggle="tooltip"
-                            data-original-title='Text under "personal use script" on www.reddit.com/prefs/apps'>
+        <!-- ============ Reddit credentials ============ -->
+        <div class="panel">
+            <div class="panel-head">
+                <img src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}" style="width:18px;height:18px"
+                    alt="">
+                <h3>Credenciais do Reddit</h3>
+            </div>
+            <div class="panel-pad stack">
+                <div class="form-row">
+                    <div class="form-label">Client ID<span class="hint">Texto sob “personal use script”</span></div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="user"></i></span>
+                            <input class="input" name="client_id" value="{{ data.client_id }}"
+                                placeholder="seu client id"></div>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="client_secret" class="col-4">Client Secret</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-key-fill"></i>
-                        </div>
-                        <input name="client_secret" value="{{ data.client_secret }}"
-                            placeholder="Your Reddit app's client secret" type="text" class="form-control"
-                            data-toggle="tooltip" data-original-title='"Secret" on www.reddit.com/prefs/apps'>
+                <div class="form-row">
+                    <div class="form-label">Client Secret</div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="key-round"></i></span>
+                            <input class="input" name="client_secret" value="{{ data.client_secret }}"
+                                placeholder="seu client secret"></div>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="username" class="col-4">Reddit Username</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-person-fill"></i>
-                        </div>
-                        <input name="username" value="{{ data.username }}" placeholder="Your Reddit account's username"
-                            type="text" class="form-control">
+                <div class="form-row">
+                    <div class="form-label">Usuário</div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="at-sign"></i></span>
+                            <input class="input" name="username" value="{{ data.username }}"
+                                placeholder="seu usuário do Reddit"></div>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="password" class="col-4">Reddit Password</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-lock-fill"></i>
-                        </div>
-                        <input name="password" value="{{ data.password }}" placeholder="Your Reddit account's password"
-                            type="password" class="form-control">
+                <div class="form-row">
+                    <div class="form-label">Senha</div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="lock"></i></span>
+                            <input class="input" type="password" name="password" value="{{ data.password }}"
+                                placeholder="••••••••••••"></div>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label class="col-4">Do you have Reddit 2FA enabled?</label>
-                <div class="col-8">
-                    <div class="form-check form-switch">
-                        <input name="2fa" class="form-check-input" type="checkbox" value="True" data-toggle="tooltip"
-                            data-original-title='Check it if you have enabled 2FA on your Reddit account'>
-                    </div>
-                    <span class="form-text text-muted"><a
-                            href="https://reddit-video-maker-bot.netlify.app/docs/configuring#setting-up-the-api"
-                            target="_blank">Need help? Click here to open step-by-step guide.</a></span>
+                <div class="form-row">
+                    <div class="form-label">Autenticação 2FA<span class="hint">Ative se usa 2FA na conta</span></div>
+                    <div class="form-control-wrap"><label class="switch"><input type="checkbox" name="2fa"
+                                value="True"><span class="track"></span><span class="thumb"></span></label></div>
                 </div>
             </div>
+        </div>
 
-            <!-- Reddit Thread -->
-            <p class="h4">Reddit Thread</p>
-            <div class="row mb-2">
-                <label class="col-4">Random Thread</label>
-                <div class="col-8">
-                    <div class="form-check form-switch">
-                        <input name="random" class="form-check-input" type="checkbox" value="True" data-toggle="tooltip"
-                            data-original-title='If disabled, it will ask you for a thread link, instead of picking random one'>
+        <!-- ============ Reddit thread ============ -->
+        <div class="panel">
+            <div class="panel-head"><i data-lucide="message-square"></i>
+                <h3>Thread do Reddit</h3>
+            </div>
+            <div class="panel-pad stack">
+                <div class="form-row">
+                    <div class="form-label">Thread aleatória<span class="hint">Se desligado, pede um link de thread</span>
+                    </div>
+                    <div class="form-control-wrap"><label class="switch"><input type="checkbox" name="random"
+                                value="True"><span class="track"></span><span class="thumb"></span></label></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Subreddit<span class="hint">Use “+” para combinar vários</span></div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><img
+                                    src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}" alt=""></span>
+                            <input class="input" name="subreddit" value="{{ data.subreddit }}"
+                                placeholder="ex: AskReddit+tifu"></div>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="subreddit" class="col-4">Subreddit</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-reddit"></i>
+                <div class="form-row">
+                    <div class="form-label">Post ID<span class="hint">Para usar um post específico</span></div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="file-text"></i></span>
+                            <input class="input" name="post_id" value="{{ data.post_id }}" placeholder="ex: urdtfx">
                         </div>
-                        <input value="{{ data.subreddit }}" name="subreddit" type="text" class="form-control"
-                            placeholder="Subreddit to pull posts from (e.g. AskReddit)" data-toggle="tooltip"
-                            data-original-title='You can have multiple subreddits,
-                                    add "+" between them (e.g. AskReddit+Redditdev)'>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="post_id" class="col-4">Post ID</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-file-text"></i>
+                <div class="form-row">
+                    <div class="form-label">Tamanho máx. do comentário</div>
+                    <div class="form-control-wrap">
+                        <div class="range-field"><input type="range" class="range" name="max_comment_length" min="10"
+                                max="10000" step="1" value="{{ data.max_comment_length }}"><span
+                                class="range-val"></span></div>
+                        <div class="form-help">Número máx. de caracteres por comentário.</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Idioma do post<span class="hint">Tradução (ex: pt, es, en)</span></div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="languages"></i></span>
+                            <input class="input" name="post_lang" value="{{ data.post_lang }}" placeholder="ex: pt">
                         </div>
-                        <input value="{{ data.post_id }}" name="post_id" type="text" class="form-control"
-                            placeholder="Used if you want to use a specific post (e.g. urdtfx)">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Mínimo de comentários</div>
+                    <div class="form-control-wrap">
+                        <div class="range-field"><input type="range" class="range" name="min_comments" min="15"
+                                max="1000" step="1" value="{{ data.min_comments }}"><span class="range-val"></span></div>
+                        <div class="form-help">Mínimo de comentários para o post entrar.</div>
                     </div>
                 </div>
             </div>
-            <div class="row mb-2">
-                <label for="max_comment_length" class="col-4">Max Comment Length</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <input name="max_comment_length" type="range" class="form-range" min="10" max="10000" step="1"
-                            value="{{ data.max_comment_length }}" data-toggle="tooltip"
-                            data-original-title="{{ data.max_comment_length }}">
-                    </div>
-                    <span class="form-text text-muted">Max number of characters a comment can have.</span>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="post_lang" class="col-4">Post Language</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-translate"></i>
-                        </div>
-                        <input value="{{ data.post_lang }}" name="post_lang" type="text" class="form-control"
-                            placeholder="The language you would like to translate to">
-                    </div>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="min_comments" class="col-4">Minimum Comments</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <input name="min_comments" type="range" class="form-range" min="15" max="1000" step="1"
-                            value="{{ data.min_comments }}" data-toggle="tooltip"
-                            data-original-title="{{ data.min_comments }}">
-                    </div>
-                    <span class="form-text text-muted">The minimum number of comments a post should have to be
-                        included.</span>
-                </div>
-            </div>
+        </div>
 
-            <!-- General Settings -->
-            <p class="h4">General Settings</p>
-            <div class="row mb-2">
-                <label class="col-4">Allow NSFW</label>
-                <div class="col-8">
-                    <div class="form-check form-switch">
-                        <input name="allow_nsfw" class="form-check-input" type="checkbox" value="True"
-                            data-toggle="tooltip" data-original-title='If checked NSFW posts will be allowed'>
+        <!-- ============ General / video ============ -->
+        <div class="panel">
+            <div class="panel-head"><i data-lucide="sliders-horizontal"></i>
+                <h3>Geração & vídeo</h3>
+            </div>
+            <div class="panel-pad stack">
+                <div class="form-row">
+                    <div class="form-label">Permitir NSFW<span class="hint">Inclui posts +18</span></div>
+                    <div class="form-control-wrap"><label class="switch"><input type="checkbox" name="allow_nsfw"
+                                value="True"><span class="track"></span><span class="thumb"></span></label></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Tema do screenshot</div>
+                    <div class="form-control-wrap" style="max-width:220px">
+                        <div class="select"><select name="theme">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                            </select><i class="chev" data-lucide="chevron-down"></i></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Vezes a executar<span class="hint">Quantos vídeos por rodada</span></div>
+                    <div class="form-control-wrap">
+                        <div class="range-field"><input type="range" class="range" name="times_to_run" min="1"
+                                max="1000" step="1" value="{{ data.times_to_run }}"><span class="range-val"></span></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Opacidade dos comentários</div>
+                    <div class="form-control-wrap">
+                        <div class="range-field"><input type="range" class="range" name="opacity" min="0" max="1"
+                                step="0.05" value="{{ data.opacity }}"><span class="range-val"></span></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Transição (s)<span class="hint">0 para desativar</span></div>
+                    <div class="form-control-wrap">
+                        <div class="range-field"><input type="range" class="range" name="transition" min="0" max="2"
+                                step="0.05" value="{{ data.transition }}"><span class="range-val"></span></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Fundo do vídeo</div>
+                    <div class="form-control-wrap">
+                        <div class="select"><select name="background_choice">
+                                <option value=" ">Vídeo aleatório</option>
+                                {% for background in checks["background_video"]["options"][1:] %}
+                                <option value="{{ background }}">{{ background }}</option>
+                                {% endfor %}
+                            </select><i class="chev" data-lucide="chevron-down"></i></div>
+                        <div class="form-help"><a class="link" href="/backgrounds"
+                                style="color:var(--violet-400)">Gerenciar fundos</a></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Thumbnail no fundo<span class="hint">Usa assets/backgrounds/thumbnail.png</span>
+                    </div>
+                    <div class="form-control-wrap"><label class="switch"><input type="checkbox"
+                                name="background_thumbnail" value="True"><span class="track"></span><span
+                                class="thumb"></span></label></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Fonte do thumbnail (.ttf)</div>
+                    <div class="form-control-wrap">
+                        <input class="input-naked" name="background_thumbnail_font_family" placeholder="arial"
+                            value="{{ data.background_thumbnail_font_family }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Tamanho da fonte (px)</div>
+                    <div class="form-control-wrap" style="max-width:160px">
+                        <input class="input-naked" type="number" name="background_thumbnail_font_size" placeholder="96"
+                            value="{{ data.background_thumbnail_font_size }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Cor da fonte (rgb)</div>
+                    <div class="form-control-wrap" style="max-width:220px">
+                        <input class="input-naked" name="background_thumbnail_font_color" placeholder="255,255,255"
+                            value="{{ data.background_thumbnail_font_color }}">
                     </div>
                 </div>
             </div>
-            <div class="row mb-2">
-                <label for="theme" class="col-4">Reddit Theme</label>
-                <div class="col-8">
-                    <select name="theme" class="form-select" data-toggle="tooltip"
-                        data-original-title='Sets the theme of Reddit screenshots'>
-                        <option value="dark">Dark</option>
-                        <option value="light">Light</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="times_to_run" class="col-4">Times To Run</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <input name="times_to_run" type="range" class="form-range" min="1" max="1000" step="1"
-                            value="{{ data.times_to_run }}" data-toggle="tooltip"
-                            data-original-title="{{ data.times_to_run }}">
-                    </div>
-                    <span class="form-text text-muted">Used if you want to create multiple videos.</span>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="opacity" class="col-4">Opacity Of Comments</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <input name="opacity" type="range" class="form-range" min="0" max="1" step="0.05"
-                            value="{{ data.opacity }}" data-toggle="tooltip" data-original-title="{{ data.opacity }}">
-                    </div>
-                    <span class="form-text text-muted">Sets the opacity of the comments when overlayed over the
-                        background.</span>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="transition" class="col-4">Transition</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <input name="transition" type="range" class="form-range" min="0" max="2" step="0.05"
-                            value="{{ data.transition }}" data-toggle="tooltip"
-                            data-original-title="{{ data.transition }}">
-                    </div>
-                    <span class="form-text text-muted">Sets the transition time (in seconds) between the
-                        comments. Set to 0 if you want to disable it.</span>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="background_choice" class="col-4">Background Choice</label>
-                <div class="col-8">
-                    <select name="background_choice" class="form-select" data-toggle="tooltip"
-                        data-original-title='Sets the background of the video'>
-                        <option value=" ">Random Video</option>
-                        {% for background in checks["background_video"]["options"][1:] %}
-                        <option value="{{background}}">{{background}}</option>
-                        {% endfor %}
-                    </select>
-                    <span class="form-text text-muted"><a href="/backgrounds" target="_blank">See all available
-                            backgrounds</a></span>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="background_thumbnail" class="col-4">Background Thumbnail</label>
-                <div class="col-8">
-                    <div class="form-check form-switch">
-                        <input name="background_thumbnail" class="form-check-input" type="checkbox" value="True"
-                            data-toggle="tooltip"
-                            data-original-title='If checked a thumbnail will be added to the video (put a thumbnail.png file in the assets/backgrounds directory for it to be used.)'>
-                    </div>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="background_thumbnail_font_family" class="col-4">Background Thumbnail Font Family (.ttf)</label>
-                <div class="col-8">
-                    <input name="background_thumbnail_font_family" type="text" class="form-control"
-                        placeholder="arial" value="{{ data.background_thumbnail_font_family }}">
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="background_thumbnail_font_size" class="col-4">Background Thumbnail Font Size (px)</label>
-                <div class="col-8">
-                    <input name="background_thumbnail_font_size" type="number" class="form-control"
-                        placeholder="96" value="{{ data.background_thumbnail_font_size }}">
-                </div>
-            </div>
-            <!-- need to create a color picker -->
-            <div class="row mb-2">
-                <label for="background_thumbnail_font_color" class="col-4">Background Thumbnail Font Color (rgb)</label>
-                <div class="col-8">
-                    <input name="background_thumbnail_font_color" type="text" class="form-control"
-                        placeholder="255,255,255" value="{{ data.background_thumbnail_font_color }}">
-                </div>
-            </div>
+        </div>
 
-            <!-- TTS Settings -->
-            <p class="h4">TTS Settings</p>
-            <div class="row mb-2">
-                <label for="voice_choice" class="col-4">TTS Voice Choice</label>
-                <div class="col-8">
-                    <select name="voice_choice" class="form-select" data-toggle="tooltip"
-                        data-original-title='The voice platform used for TTS generation'>
-                        <option value="streamlabspolly">Streamlabspolly</option>
-                        <option value="tiktok">TikTok</option>
-                        <option value="googletranslate">Google Translate</option>
-                        <option value="awspolly">AWS Polly</option>
-                        <option value="pyttsx">Python TTS (pyttsx)</option>
-                    </select>
-                </div>
+        <!-- ============ TTS ============ -->
+        <div class="panel">
+            <div class="panel-head"><i data-lucide="mic"></i>
+                <h3>TTS & voz</h3>
             </div>
-            <div class="row mb-2">
-                <label for="aws_polly_voice" class="col-4">AWS Polly Voice</label>
-                <div class="col-8">
-                    <div class="input-group voices">
-                        <select name="aws_polly_voice" class="form-select" data-toggle="tooltip"
-                            data-original-title='The voice used for AWS Polly'>
-                            <option value="Brian">Brian</option>
-                            <option value="Emma">Emma</option>
-                            <option value="Russell">Russell</option>
-                            <option value="Joey">Joey</option>
-                            <option value="Matthew">Matthew</option>
-                            <option value="Joanna">Joanna</option>
-                            <option value="Kimberly">Kimberly</option>
-                            <option value="Amy">Amy</option>
-                            <option value="Geraint">Geraint</option>
-                            <option value="Nicole">Nicole</option>
-                            <option value="Justin">Justin</option>
-                            <option value="Ivy">Ivy</option>
-                            <option value="Kendra">Kendra</option>
-                            <option value="Salli">Salli</option>
-                            <option value="Raveena">Raveena</option>
-                        </select>
-
-                        <button type="button" class="btn btn-primary"><i id="awspolly_icon"
-                                class="bi-volume-up-fill"></i></button>
+            <div class="panel-pad stack">
+                <div class="form-row">
+                    <div class="form-label">Plataforma de voz</div>
+                    <div class="form-control-wrap" style="max-width:280px">
+                        <div class="select"><select name="voice_choice">
+                                <option value="streamlabspolly">Streamlabs Polly</option>
+                                <option value="tiktok">TikTok</option>
+                                <option value="googletranslate">Google Translate</option>
+                                <option value="awspolly">AWS Polly</option>
+                                <option value="pyttsx">Python TTS (pyttsx)</option>
+                            </select><i class="chev" data-lucide="chevron-down"></i></div>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="streamlabs_polly_voice" class="col-4">Streamlabs Polly Voice</label>
-                <div class="col-8">
-                    <div class="input-group voices">
-                        <select id="streamlabs_polly_voice" name="streamlabs_polly_voice" class="form-select"
-                            data-toggle="tooltip" data-original-title='The voice used for Streamlabs Polly'>
-                            <option value="Brian">Brian</option>
-                            <option value="Emma">Emma</option>
-                            <option value="Russell">Russell</option>
-                            <option value="Joey">Joey</option>
-                            <option value="Matthew">Matthew</option>
-                            <option value="Joanna">Joanna</option>
-                            <option value="Kimberly">Kimberly</option>
-                            <option value="Amy">Amy</option>
-                            <option value="Geraint">Geraint</option>
-                            <option value="Nicole">Nicole</option>
-                            <option value="Justin">Justin</option>
-                            <option value="Ivy">Ivy</option>
-                            <option value="Kendra">Kendra</option>
-                            <option value="Salli">Salli</option>
-                            <option value="Raveena">Raveena</option>
-                        </select>
-
-                        <button type="button" class="btn btn-primary"><i id="streamlabs_icon"
-                                class="bi bi-volume-up-fill"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="tiktok_voice" class="col-4">TikTok Voice</label>
-                <div class="col-8">
-                    <div class="input-group voices">
-                        <select name="tiktok_voice" class="form-select" data-toggle="tooltip"
-                            data-original-title='The voice used for TikTok TTS'>
-                            <option disabled value="">-----Disney Voices-----</option>
-                            <option value="en_us_ghostface">Ghost Face</option>
-                            <option value="en_us_chewbacca">Chewbacca</option>
-                            <option value="en_us_c3po">C3PO</option>
-                            <option value="en_us_stitch">Stitch</option>
-                            <option value="en_us_stormtrooper">Stormtrooper</option>
-                            <option value="en_us_rocket">Rocket</option>
-                            <option disabled value="">-----English Voices-----</option>
-                            <option value="en_au_001">English AU - Female</option>
-                            <option value="en_au_002">English AU - Male</option>
-                            <option value="en_uk_001">English UK - Male 1</option>
-                            <option value="en_uk_003">English UK - Male 2</option>
-                            <option value="en_us_001">English US - Female (Int. 1)</option>
-                            <option value="en_us_002">English US - Female (Int. 2)</option>
-                            <option value="en_us_006">English US - Male 1</option>
-                            <option value="en_us_007">English US - Male 2</option>
-                            <option value="en_us_009">English US - Male 3</option>
-                            <option value="en_us_010">English US - Male 4</option>
-                            <option disabled value="">-----European Voices-----</option>
-                            <option value="fr_001">French - Male 1</option>
-                            <option value="fr_002">French - Male 2</option>
-                            <option value="de_001">German - Female</option>
-                            <option value="de_002">German - Male</option>
-                            <option value="es_002">Spanish - Male</option>
-                            <option disabled value="">-----American Voices-----</option>
-                            <option value="es_mx_002">Spanish MX - Male</option>
-                            <option value="br_001">Portuguese BR - Female 1</option>
-                            <option value="br_003">Portuguese BR - Female 2</option>
-                            <option value="br_004">Portuguese BR - Female 3</option>
-                            <option value="br_005">Portuguese BR - Male</option>
-                            <option disabled value="">-----Asian Voices-----</option>
-                            <option value="id_001">Indonesian - Female</option>
-                            <option value="jp_001">Japanese - Female 1</option>
-                            <option value="jp_003">Japanese - Female 2</option>
-                            <option value="jp_005">Japanese - Female 3</option>
-                            <option value="jp_006">Japanese - Male</option>
-                            <option value="kr_002">Korean - Male 1</option>
-                            <option value="kr_003">Korean - Female</option>
-                            <option value="kr_004">Korean - Male 2</option>
-                        </select>
-
-                        <button type="button" class="btn btn-primary"><i id="tiktok_icon"
-                                class="bi-volume-up-fill"></i></button>
-                    </div>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <label for="tiktok_sessionid" class="col-4">TikTok SessionId</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-mic-fill"></i>
+                <div class="form-row">
+                    <div class="form-label">Voz AWS Polly</div>
+                    <div class="form-control-wrap voices">
+                        <div class="row gap-8">
+                            <div class="select" style="flex:1"><select name="aws_polly_voice">
+                                    {% for v in ["Brian","Emma","Russell","Joey","Matthew","Joanna","Kimberly","Amy","Geraint","Nicole","Justin","Ivy","Kendra","Salli","Raveena"] %}
+                                    <option value="{{ v }}">{{ v }}</option>{% endfor %}
+                                </select><i class="chev" data-lucide="chevron-down"></i></div>
+                            <button type="button" class="icon-btn voice-play" title="Tocar amostra"><i
+                                    data-lucide="volume-2"></i></button>
                         </div>
-                        <input value="{{ data.tiktok_sessionid }}" name="tiktok_sessionid" type="text" class="form-control"
-                            data-toggle="tooltip"
-                            data-original-title="TikTok sessionid needed for the TTS API request. Check documentation if you don't know how to obtain it.">
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="python_voice" class="col-4">Python Voice</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-mic-fill"></i>
+                <div class="form-row">
+                    <div class="form-label">Voz Streamlabs Polly</div>
+                    <div class="form-control-wrap voices">
+                        <div class="row gap-8">
+                            <div class="select" style="flex:1"><select name="streamlabs_polly_voice">
+                                    {% for v in ["Brian","Emma","Russell","Joey","Matthew","Joanna","Kimberly","Amy","Geraint","Nicole","Justin","Ivy","Kendra","Salli","Raveena"] %}
+                                    <option value="{{ v }}">{{ v }}</option>{% endfor %}
+                                </select><i class="chev" data-lucide="chevron-down"></i></div>
+                            <button type="button" class="icon-btn voice-play" title="Tocar amostra"><i
+                                    data-lucide="volume-2"></i></button>
                         </div>
-                        <input value="{{ data.python_voice }}" name="python_voice" type="text" class="form-control"
-                            data-toggle="tooltip"
-                            data-original-title='The index of the system TTS voices (can be downloaded externally, run ptt.py to find value, start from zero)'>
                     </div>
                 </div>
-            </div>
-            <div class="row mb-2">
-                <label for="py_voice_num" class="col-4">Py Voice Number</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <i class="bi bi-headset"></i>
+                <div class="form-row">
+                    <div class="form-label">Voz TikTok</div>
+                    <div class="form-control-wrap voices">
+                        <div class="row gap-8">
+                            <div class="select" style="flex:1"><select name="tiktok_voice">
+                                    <optgroup label="Disney">
+                                        <option value="en_us_ghostface">Ghost Face</option>
+                                        <option value="en_us_chewbacca">Chewbacca</option>
+                                        <option value="en_us_c3po">C3PO</option>
+                                        <option value="en_us_stitch">Stitch</option>
+                                        <option value="en_us_stormtrooper">Stormtrooper</option>
+                                        <option value="en_us_rocket">Rocket</option>
+                                    </optgroup>
+                                    <optgroup label="English">
+                                        <option value="en_au_001">English AU - Female</option>
+                                        <option value="en_au_002">English AU - Male</option>
+                                        <option value="en_uk_001">English UK - Male 1</option>
+                                        <option value="en_uk_003">English UK - Male 2</option>
+                                        <option value="en_us_001">English US - Female 1</option>
+                                        <option value="en_us_002">English US - Female 2</option>
+                                        <option value="en_us_006">English US - Male 1</option>
+                                        <option value="en_us_007">English US - Male 2</option>
+                                        <option value="en_us_009">English US - Male 3</option>
+                                        <option value="en_us_010">English US - Male 4</option>
+                                    </optgroup>
+                                    <optgroup label="Europe">
+                                        <option value="fr_001">French - Male 1</option>
+                                        <option value="fr_002">French - Male 2</option>
+                                        <option value="de_001">German - Female</option>
+                                        <option value="de_002">German - Male</option>
+                                        <option value="es_002">Spanish - Male</option>
+                                    </optgroup>
+                                    <optgroup label="America">
+                                        <option value="es_mx_002">Spanish MX - Male</option>
+                                        <option value="br_001">Portuguese BR - Female 1</option>
+                                        <option value="br_003">Portuguese BR - Female 2</option>
+                                        <option value="br_004">Portuguese BR - Female 3</option>
+                                        <option value="br_005">Portuguese BR - Male</option>
+                                    </optgroup>
+                                    <optgroup label="Asia">
+                                        <option value="id_001">Indonesian - Female</option>
+                                        <option value="jp_001">Japanese - Female 1</option>
+                                        <option value="jp_003">Japanese - Female 2</option>
+                                        <option value="jp_005">Japanese - Female 3</option>
+                                        <option value="jp_006">Japanese - Male</option>
+                                        <option value="kr_002">Korean - Male 1</option>
+                                        <option value="kr_003">Korean - Female</option>
+                                        <option value="kr_004">Korean - Male 2</option>
+                                    </optgroup>
+                                </select><i class="chev" data-lucide="chevron-down"></i></div>
+                            <button type="button" class="icon-btn voice-play" title="Tocar amostra"><i
+                                    data-lucide="volume-2"></i></button>
                         </div>
-                        <input value="{{ data.py_voice_num }}" name="py_voice_num" type="text" class="form-control"
-                            data-toggle="tooltip"
-                            data-original-title='The number of system voices (2 are pre-installed in Windows)'>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">TikTok SessionId</div>
+                    <div class="form-control-wrap">
+                        <div class="input-group"><span class="input-affix"><i data-lucide="key-round"></i></span>
+                            <input class="input" name="tiktok_sessionid" value="{{ data.tiktok_sessionid }}"
+                                placeholder="sessionid"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Python Voice<span class="hint">Índice da voz do sistema</span></div>
+                    <div class="form-control-wrap" style="max-width:160px">
+                        <input class="input-naked" name="python_voice" value="{{ data.python_voice }}" placeholder="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Py Voice Number</div>
+                    <div class="form-control-wrap" style="max-width:160px">
+                        <input class="input-naked" name="py_voice_num" value="{{ data.py_voice_num }}" placeholder="2">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-label">Silêncio entre falas (s)</div>
+                    <div class="form-control-wrap">
+                        <div class="range-field"><input type="range" class="range" name="silence_duration" min="0"
+                                max="5" step="0.05" value="{{ data.silence_duration }}"><span class="range-val"></span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row mb-2">
-                <label for="silence_duration" class="col-4">Silence Duration</label>
-                <div class="col-8">
-                    <div class="input-group">
-                        <input name="silence_duration" type="range" class="form-range" min="0" max="5" step="0.05"
-                            value="{{ data.silence_duration }}" data-toggle="tooltip"
-                            data-original-title="{{ data.silence_duration }}">
-                    </div>
-                    <span class="form-text text-muted">Time in seconds between TTS comments.</span>
-                </div>
-            </div>
-            <div class="col text-center">
-                <br>
-                <button id="defaultSettingsBtn" type="button" class="btn btn-secondary">Default
-                    Settings</button>
-                <button id="submitButton" type="submit" class="btn btn-success">Save
-                    Changes</button>
-            </div>
-        </form>
+        </div>
+
+        <div class="row" style="justify-content:flex-end;gap:10px">
+            <button id="defaultSettingsBtn" type="button" class="btn btn-ghost"><i data-lucide="rotate-ccw"></i>
+                Restaurar padrão</button>
+            <button id="submitButton" type="submit" class="btn btn-primary"><i data-lucide="check"></i> Salvar
+                alterações</button>
+        </div>
     </div>
-    <audio src=""></audio>
-</main>
+</form>
 
+<audio id="voiceSample" src=""></audio>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
-    // Test voices buttons
-    var playing = false;
+    // current config + validation rules from the backend.
+    // Embed tojson output DIRECTLY as a JS object literal — do NOT wrap it in
+    // JSON.parse('...'): tojson does not escape backslashes/quotes for a JS
+    // string context, so regex values in `checks` would break the parse.
+    var data = {{ data | tojson }};
+    var validateChecks = {{ checks | tojson }};
 
-    $(".voices button").click(function () {
-        var icon = $(this).find("i");
-        var audio = $("audio");
-
-        if (playing) {
-            playing.toggleClass("bi-volume-up-fill bi-stop-fill");
-
-            // Clicked the same button - stop audio
-            if (playing.prop("id") == icon.prop("id")) {
-                audio[0].pause();
-                playing = false;
-                return;
-            }
-        }
-
-        icon.toggleClass("bi-volume-up-fill bi-stop-fill");
-        let path = "voices/" + $(this).closest(".voices").find("select").prop("value").toLowerCase() + ".mp3";
-
-        audio.prop("src", path);
-        audio[0].play();
-        playing = icon;
-
-        audio[0].onended = function () {
-            icon.toggleClass("bi-volume-up-fill bi-stop-fill");
-            playing = false;
-        }
-    });
-
-    // Wait for DOM to load
-    $(document).ready(function () {
-        // Add tooltips
-        $('[data-toggle="tooltip"]').tooltip();
-        $('[data-toggle="tooltip"]').on('click', function () {
-            $(this).tooltip('hide');
+    $(function () {
+        // ---- bind current values into checkboxes / selects ----
+        $('input[type="checkbox"]').each(function () {
+            $(this).prop("checked", !!data[$(this).prop("name")]);
         });
-
-        // Update slider tooltip
-        $(".form-range").on("input", function () {
-            $(this).attr("value", $(this).val());
-            $(this).attr("data-original-title", $(this).val());
-            $(this).tooltip("show");
+        $('select').each(function () {
+            var name = $(this).prop("name");
+            if (data[name] !== undefined && data[name] !== null) $(this).val(String(data[name]));
         });
+        // refresh range readouts (value attr is already bound from Jinja)
+        if (window.bindRanges) window.bindRanges();
 
-        // Get current config
-        var data = JSON.parse('{{data | tojson}}');
-
-        // Set current checkboxes
-        $('.form-check-input').each(function () {
-            $(this).prop("checked", data[$(this).prop("name")]);
-        });
-
-        // Set current select options
-        $('.form-select').each(function () {
-            $(this).prop("value", data[$(this).prop("name")]);
-        });
-
-        // Submit "False" when checkbox isn't ticked
-        $('#settingsForm').submit(function () {
-            $('.form-check-input').each(function () {
-                if (!($(this).is(':checked'))) {
-                    $(this).prop("value", "False");
-                    $(this).prop("checked", true);
+        // ---- submit "False" for unticked checkboxes (preserve original behaviour) ----
+        $('#settingsForm').on("submit", function () {
+            $('input[type="checkbox"]').each(function () {
+                if (!$(this).is(':checked')) {
+                    $(this).prop("value", "False").prop("checked", true);
                 }
             });
         });
 
-
-        // Get validation values
-        let validateChecks = JSON.parse('{{checks | tojson}}');
-
-        // Set default values
-        $("#defaultSettingsBtn").click(function (event) {
+        // ---- restore defaults ----
+        $("#defaultSettingsBtn").click(function () {
             $("#settingsForm input, #settingsForm select").each(function () {
-                let check = validateChecks[$(this).prop("name")];
-
-                if (check["default"]) {
-                    $(this).prop("value", check["default"]);
-
-                    // Update tooltip value for input[type="range"]
-                    if ($(this).prop("type") == "range") {
-                        $(this).attr("data-original-title", check["default"]);
+                var name = $(this).prop("name");
+                var check = validateChecks[name];
+                if (check && check["default"] !== undefined && check["default"] !== "") {
+                    if ($(this).prop("type") === "checkbox") {
+                        $(this).prop("checked", !!check["default"]);
+                    } else {
+                        $(this).val(String(check["default"]));
                     }
                 }
             });
+            if (window.bindRanges) {
+                // force readouts to refresh after programmatic value change
+                $(".range").each(function () { this.dispatchEvent(new Event("input")); });
+            }
+            window.showToast("Valores padrão restaurados (lembre de salvar)");
         });
 
-        // Validate form
-        $('#settingsForm').submit(function (event) {
+        // ---- client-side validation (ported from original GUI) ----
+        $('#settingsForm').on("submit", function (event) {
+            var firstInvalid = null;
             $("#settingsForm input, #settingsForm select").each(function () {
-                if (!(validate($(this)))) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    $("html, body").animate({
-                        scrollTop: $(this).offset().top
-                    });
-                }
-
+                if (!validate($(this)) && !firstInvalid) firstInvalid = $(this);
             });
+            if (firstInvalid) {
+                event.preventDefault();
+                event.stopPropagation();
+                $("html, body").animate({ scrollTop: firstInvalid.offset().top - 120 });
+                window.showToast("Alguns campos estão inválidos");
+            }
         });
-
-        $("#settingsForm input").on("keyup", function () {
-            validate($(this));
-        });
-
-        $("#settingsForm select").on("change", function () {
-            validate($(this));
-        });
+        $("#settingsForm input").on("keyup", function () { validate($(this)); });
+        $("#settingsForm select").on("change", function () { validate($(this)); });
 
         function validate(object) {
-            let bool = check(object.prop("name"), object.prop("value"));
-
-            // Change class
-            if (bool) {
-                object.removeClass("is-invalid");
-                object.addClass("is-valid");
-            }
-            else {
-                object.removeClass("is-valid");
-                object.addClass("is-invalid");
-            }
-
+            var bool = check(object.prop("name"), object.prop("value"));
+            object.css("border-color", bool ? "" : "var(--danger)");
+            // also tint the input-group / select wrapper if present
+            object.closest(".input-group, .select").css("box-shadow", bool ? "" : "0 0 0 1px var(--danger)");
             return bool;
 
-            // Check values (return true/false)
             function check(name, value) {
-                let check = validateChecks[name];
+                var check = validateChecks[name];
+                if (!check) return true;                 // field not validated by backend
+                if (value === undefined) return true;
+                value = String(value);
 
-                // If value is empty - check if it's optional
                 if (value.length == 0) {
-                    if (check["optional"] == false) {
-                        return false;
-                    }
-                    else {
-                        object.prop("value", check["default"]);
-                        return true;
-                    }
+                    return check["optional"] !== false;  // empty ok only if optional
                 }
-
-                // Check if value is too short
-                if (check["nmin"]) {
+                if (check["nmin"] != null) {
                     if (check["type"] == "int" || check["type"] == "float") {
-                        if (value < check["nmin"]) {
-                            return false;
-                        }
-                    }
-                    else {
-                        if (value.length < check["nmin"]) {
-                            return false;
-                        }
-
-                    }
+                        if (Number(value) < check["nmin"]) return false;
+                    } else if (value.length < check["nmin"]) return false;
                 }
-
-                // Check if value is too long
-                if (check["nmax"]) {
+                if (check["nmax"] != null) {
                     if (check["type"] == "int" || check["type"] == "float") {
-                        if (value > check["nmax"]) {
-                            return false;
-                        }
-                    }
-                    else {
-                        if (value.length > check["nmax"]) {
-                            return false;
-                        }
-
-                    }
+                        if (Number(value) > check["nmax"]) return false;
+                    } else if (value.length > check["nmax"]) return false;
                 }
-
-                // Check if value matches regex
                 if (check["regex"]) {
-                    let regex = new RegExp(check["regex"]);
-                    if (!(regex.test(value))) {
-                        return false;
-                    }
+                    if (!(new RegExp(check["regex"]).test(value))) return false;
                 }
-
                 return true;
             }
         }
+
+        // ---- voice sample preview ----
+        var audio = document.getElementById("voiceSample");
+        var playingBtn = null;
+        function resetBtn(btn) {
+            if (!btn) return;
+            btn.innerHTML = '<i data-lucide="volume-2"></i>';
+            window.drawIcons();
+        }
+        $(".voice-play").click(function () {
+            var btn = this;
+            var voice = $(this).closest(".voices").find("select").val();
+            if (!voice) return;
+            var src = "/voices/" + voice.toLowerCase() + ".mp3";
+
+            // same button → stop
+            if (playingBtn === btn && !audio.paused) {
+                audio.pause();
+                resetBtn(btn);
+                playingBtn = null;
+                return;
+            }
+            resetBtn(playingBtn);
+            audio.src = src;
+            audio.play().then(function () {
+                btn.innerHTML = '<i data-lucide="square"></i>';
+                window.drawIcons();
+                playingBtn = btn;
+            }).catch(function () {
+                window.showToast("Amostra indisponível para esta voz");
+            });
+        });
+        audio.onended = function () { resetBtn(playingBtn); playingBtn = null; };
     });
 </script>
-
 {% endblock %}

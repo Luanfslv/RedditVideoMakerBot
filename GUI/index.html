@@ -1,182 +1,203 @@
 {% extends "layout.html" %}
-{% block main %}
+{% block content %}
 
-<main>
-    <div class="album py-2 bg-light">
-        <div class="container">
+<!-- ====================== DASHBOARD ====================== -->
+<section>
+    <div class="hero">
+        <img src="{{ url_for('static', filename='assets/reddit-snoo-white.svg') }}" class="hero-snoo" alt="">
+        <span class="badge badge-violet"><i data-lucide="sparkles"></i> Automático</span>
+        <h2 style="margin-top:14px">Transforme threads do Reddit<br>em shorts virais</h2>
+        <p>Escolha um subreddit, uma voz e um fundo. O resto — narração, captura e edição — é feito sozinho.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="/create"><i data-lucide="clapperboard"></i> Criar vídeo agora</a>
+            <a class="btn" href="#library"><i data-lucide="folder-open"></i> Ver biblioteca</a>
+        </div>
+    </div>
 
-            <div class="row mt-2">
-                <div class="col-12 col-md-3 mb-3">
-                    <input type="text" class="form-control searchFilter" placeholder="Search videos"
-                        aria-label="Search videos" onkeyup="searchFilter()">
-                </div>
+    <div class="grid grid-stats mt-24">
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="clapperboard"></i></div>
+            <div class="stat-val" id="statVideoCount">0</div>
+            <div class="stat-label">Vídeos criados</div>
+            <span class="stat-delta up"><i data-lucide="check"></i> em <code>results/</code></span>
+        </div>
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="loader"></i></div>
+            <div class="stat-val">—</div>
+            <div class="stat-label">Na fila de render</div>
+            <!-- placeholder: sem backend de fila -->
+            <span class="stat-delta down"><i data-lucide="info"></i> via python main.py</span>
+        </div>
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="layers"></i></div>
+            <div class="stat-val" id="statBgCount">0</div>
+            <div class="stat-label">Fundos disponíveis</div>
+            <span class="stat-delta up"><i data-lucide="check"></i> backgrounds.json</span>
+        </div>
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="timer"></i></div>
+            <div class="stat-val">~2m</div>
+            <div class="stat-label">Render médio</div>
+            <!-- placeholder: estimativa estática -->
+            <span class="stat-delta up"><i data-lucide="info"></i> estimado</span>
+        </div>
+    </div>
+
+    <div class="grid mt-32" style="grid-template-columns: 1.55fr 1fr; align-items:start">
+        <div>
+            <div class="section-title">
+                <h2>Vídeos recentes</h2>
+                <a class="link" href="#library">Ver todos <i data-lucide="arrow-right"></i></a>
             </div>
+            <div class="media-grid" id="recentGrid" style="grid-template-columns:repeat(3,1fr)"></div>
+            <div id="recentEmpty" class="placeholder-note" style="display:none">
+                <i data-lucide="info"></i>
+                <span>Nenhum vídeo ainda. Gere o primeiro com <strong>python main.py</strong>.</span>
+            </div>
+        </div>
 
-            <div class="grid row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" id="videos">
-
+        <div class="panel">
+            <div class="panel-head">
+                <i data-lucide="loader"></i>
+                <h3>Fila de render</h3>
+                <div class="right"><a class="link" href="/queue"
+                        style="font-size:13px;font-weight:600;color:var(--violet-400)">Abrir</a></div>
+            </div>
+            <div class="panel-pad">
+                <!-- placeholder: a GUI não controla a fila; o bot roda via CLI -->
+                <div class="placeholder-note">
+                    <i data-lucide="terminal"></i>
+                    <span>A geração é disparada por <strong>python main.py</strong>. Esta fila é informativa.</span>
+                </div>
             </div>
         </div>
     </div>
-</main>
+</section>
 
+<!-- ====================== LIBRARY ====================== -->
+<section id="library" style="margin-top:40px">
+    <div class="section-title">
+        <h2>Meus vídeos</h2>
+        <a class="link" href="/create">Novo vídeo <i data-lucide="plus"></i></a>
+    </div>
+    <div class="media-grid" id="libraryGrid"></div>
+    <div id="libraryEmpty" class="placeholder-note" style="display:none">
+        <i data-lucide="info"></i>
+        <span>Sua biblioteca está vazia. Os vídeos gerados aparecem aqui automaticamente.</span>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
-    const intervals = [
-        { label: 'year', seconds: 31536000 },
-        { label: 'month', seconds: 2592000 },
-        { label: 'day', seconds: 86400 },
-        { label: 'hour', seconds: 3600 },
-        { label: 'minute', seconds: 60 },
-        { label: 'second', seconds: 1 }
-    ];
+    const SNOO = "{{ url_for('static', filename='assets/reddit-snoo.svg') }}";
 
+    /* ---- helpers reused from the original project ---- */
+    const intervals = [
+        { label: 'ano', seconds: 31536000 },
+        { label: 'mês', seconds: 2592000 },
+        { label: 'dia', seconds: 86400 },
+        { label: 'hora', seconds: 3600 },
+        { label: 'minuto', seconds: 60 },
+        { label: 'segundo', seconds: 1 }
+    ];
     function timeSince(date) {
         const seconds = Math.floor((Date.now() / 1000 - date));
-        const interval = intervals.find(i => i.seconds < seconds);
-        const count = Math.floor(seconds / interval.seconds);
-        return `${count} ${interval.label}${count !== 1 ? 's' : ''} ago`;
+        const interval = intervals.find(i => i.seconds < seconds) || intervals[intervals.length - 1];
+        const count = Math.max(0, Math.floor(seconds / interval.seconds));
+        const plural = (count !== 1 && interval.label !== 'mês') ? 's' : (count !== 1 && interval.label === 'mês' ? 'es' : '');
+        return `há ${count} ${interval.label}${plural}`;
     }
-
-    $(document).ready(function () {
-        $.getJSON("videos.json",
-            function (data) {
-                data.sort((b, a) => a['time'] - b['time'])
-                var video = '';
-                $.each(data, function (key, value) {
-                    video += '<div class="col">';
-                    video += '<div class="card shadow-sm">';
-                    //keeping original themed image card for future thumbnail usage video += '<svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#55595c"/><text x="50%" y="50%" fill="#eceeef" dy=".3em">r/'+value.subreddit+'</text></svg>';
-
-                    video += '<div class="card-body">';
-                    video += '<p class="card-text">r/' + value.subreddit + ' • ' + checkTitle(value.reddit_title, value.filename) + '</p>';
-                    video += '<div class="d-flex justify-content-between align-items-center">';
-                    video += '<div class="btn-group">';
-                    video += '<a href="https://www.reddit.com/r/' + value.subreddit + '/comments/' + value.id + '/" class="btn btn-sm btn-outline-secondary" target="_blank">View</a>';
-                    video += '<a href="http://localhost:4000/results/' + value.subreddit + '/' + value.filename + '" class="btn btn-sm btn-outline-secondary" download>Download</a>';
-                    video += '</div>';
-                    video += '<div class="btn-group">';
-                    video += '<button type="button" data-toggle="tooltip" id="copy" data-original-title="Copy to clipboard" class="btn btn-sm btn-outline-secondary" data-clipboard-text="' + getCopyData(value.subreddit, value.reddit_title, value.filename, value.background_credit) + '"><i class="bi bi-card-text"></i></button>';
-                    video += '<button type="button" data-toggle="tooltip" id="copy" data-original-title="Copy to clipboard" class="btn btn-sm btn-outline-secondary" data-clipboard-text="' + checkTitle(value.reddit_title, value.filename) + ' #Shorts #reddit"><i class="bi bi-youtube"></i></button>';
-                    video += '<button type="button" data-toggle="tooltip" id="copy" data-original-title="Copy to clipboard" class="btn btn-sm btn-outline-secondary" data-clipboard-text="' + checkTitle(value.reddit_title, value.filename) + ' #reddit"><i class="bi bi-instagram"></i></button>';
-                    video += '</div>';
-                    video += '<small class="text-muted">' + timeSince(value.time) + '</small>';
-                    video += '</div>';
-                    video += '</div>';
-                    video += '</div>';
-                    video += '</div>';
-
-                });
-
-                $('#videos').append(video);
-            });
-    });
-
-    $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip();
-        $('[data-toggle="tooltip"]').on('click', function () {
-            $(this).tooltip('hide');
-        });
-    });
-
-    $('#copy').tooltip({
-        trigger: 'click',
-        placement: 'bottom'
-    });
-
-    function setTooltip(btn, message) {
-        $(btn).tooltip('hide')
-            .attr('data-original-title', message)
-            .tooltip('show');
-    }
-
-    function hoverTooltip(btn, message) {
-        $(btn).tooltip('hide')
-            .attr('data-original-title', message)
-            .tooltip('show');
-    }
-
-    function hideTooltip(btn) {
-        setTimeout(function () {
-            $(btn).tooltip('hide');
-        }, 1000);
-    }
-
-    function disposeTooltip(btn) {
-        setTimeout(function () {
-            $(btn).tooltip('dispose');
-        }, 1500);
-    }
-
-    var clipboard = new ClipboardJS('#copy');
-
-    clipboard.on('success', function (e) {
-        e.clearSelection();
-        console.info('Action:', e.action);
-        console.info('Text:', e.text);
-        console.info('Trigger:', e.trigger);
-        setTooltip(e.trigger, 'Copied!');
-        hideTooltip(e.trigger);
-        disposeTooltip(e.trigger);
-    });
-
-    clipboard.on('error', function (e) {
-        console.error('Action:', e.action);
-        console.error('Trigger:', e.trigger);
-        setTooltip(e.trigger, fallbackMessage(e.action));
-        hideTooltip(e.trigger);
-    });
-
-    function getCopyData(subreddit, reddit_title, filename, background_credit) {
-
-        if (subreddit == undefined) {
-            subredditCopy = "";
-        } else {
-            subredditCopy = "r/" + subreddit + "\n\n";
-        }
-
-        const file = filename.slice(0, -4);
-        if (reddit_title == file) {
-            titleCopy = reddit_title;
-        } else {
-            titleCopy = file;
-        }
-
-        var copyData = "";
-        copyData += subredditCopy;
-        copyData += titleCopy;
-        copyData += "\n\nBackground credit: " + background_credit;
-        return copyData;
-    }
-
-    function getLink(subreddit, id, reddit_title) {
-        if (subreddit == undefined) {
-            return reddit_title;
-        } else {
-            return "<a target='_blank' href='https://www.reddit.com/r/" + subreddit + "/comments/" + id + "/'>" + reddit_title + "</a>";
-        }
-    }
-
     function checkTitle(reddit_title, filename) {
         const file = filename.slice(0, -4);
-        if (reddit_title == file) {
-            return reddit_title;
-        } else {
-            return file;
-        }
+        return (reddit_title == file) ? reddit_title : file;
+    }
+    function getCopyData(subreddit, reddit_title, filename, background_credit) {
+        const subredditCopy = (subreddit == undefined) ? "" : "r/" + subreddit + "\n\n";
+        const file = filename.slice(0, -4);
+        const titleCopy = (reddit_title == file) ? reddit_title : file;
+        return subredditCopy + titleCopy + "\n\nBackground credit: " + (background_credit || "");
+    }
+    // escape user-controlled strings before injecting into markup
+    function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
     }
 
-    var searchFilter = () => {
-        const input = document.querySelector(".searchFilter");
-        const cards = document.getElementsByClassName("col");
-        console.log(cards[1])
-        let filter = input.value
-        for (let i = 0; i < cards.length; i++) {
-            let title = cards[i].querySelector(".card-text");
-            if (title.innerText.toLowerCase().indexOf(filter.toLowerCase()) > -1) {
-                cards[i].classList.remove("d-none")
-            } else {
-                cards[i].classList.add("d-none")
-            }
-        }
+    /* ---- design video card, bound to real videos.json fields ---- */
+    function videoCard(v, i) {
+        const sub = esc(v.subreddit);
+        const title = esc(checkTitle(v.reddit_title, v.filename));
+        const credit = esc(v.background_credit || "—");
+        const thread = "https://www.reddit.com/r/" + encodeURIComponent(v.subreddit) + "/comments/" + encodeURIComponent(v.id) + "/";
+        const dl = "/results/" + encodeURIComponent(v.subreddit) + "/" + encodeURIComponent(v.filename);
+        const copy = esc(getCopyData(v.subreddit, v.reddit_title, v.filename, v.background_credit));
+        return `
+      <div class="vcard">
+        <a class="vthumb" style="background:${window.thumbGradient(i)}" href="${thread}" target="_blank" rel="noopener">
+          <div class="vthumb-grad"></div>
+          <span class="sub-tag"><img src="${SNOO}" alt=""> r/${sub}</span>
+          <div class="play"><i data-lucide="play"></i></div>
+        </a>
+        <div class="vbody">
+          <div class="vtitle">${title}</div>
+          <div class="vmeta">
+            <i data-lucide="user-circle"></i> ${credit}
+            <span style="margin-left:auto"><i data-lucide="clock"></i> ${timeSince(v.time)}</span>
+          </div>
+          <div class="vactions">
+            <a class="btn btn-sm" href="${dl}" download><i data-lucide="download"></i> Baixar</a>
+            <button class="btn btn-sm" data-copy data-clipboard-text="${copy}"><i data-lucide="copy"></i> Copiar</button>
+          </div>
+        </div>
+      </div>`;
     }
+
+    $(function () {
+        $.getJSON("videos.json", function (data) {
+            data = Array.isArray(data) ? data : [];
+            data.sort((b, a) => a['time'] - b['time']);
+
+            $("#statVideoCount").text(data.length);
+
+            if (data.length === 0) {
+                $("#recentEmpty").show();
+                $("#libraryEmpty").show();
+            } else {
+                $("#recentGrid").html(data.slice(0, 3).map(videoCard).join(""));
+                $("#libraryGrid").html(data.map(videoCard).join(""));
+            }
+            window.drawIcons();
+        }).fail(function () {
+            $("#recentEmpty").show();
+            $("#libraryEmpty").show();
+        });
+
+        // background count for the dashboard stat
+        $.getJSON("backgrounds.json", function (bg) {
+            if (bg && typeof bg === "object") {
+                delete bg["__comment"];
+                $("#statBgCount").text(Object.keys(bg).length);
+            }
+        });
+
+        // clipboard copy → toast
+        const clip = new ClipboardJS("[data-copy]");
+        clip.on("success", function (e) { e.clearSelection(); window.showToast("Legenda copiada para a área de transferência"); });
+        clip.on("error", function () { window.showToast("Não foi possível copiar"); });
+    });
+
+    /* ---- topbar + section search: filter video cards by title ---- */
+    window.searchFilter = function () {
+        const input = document.querySelector(".searchFilter");
+        const filter = (input ? input.value : "").toLowerCase();
+        document.querySelectorAll("#libraryGrid .vcard, #recentGrid .vcard").forEach(card => {
+            const t = card.querySelector(".vtitle");
+            const hit = t && t.innerText.toLowerCase().indexOf(filter) > -1;
+            card.style.display = hit ? "" : "none";
+        });
+    };
 </script>
 {% endblock %}

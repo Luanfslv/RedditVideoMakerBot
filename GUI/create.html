@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!-- placeholder: a GUI não dispara o pipeline; o bot roda via CLI (python main.py).
+     Esta tela é um montador visual que aponta para as Configurações reais. -->
+<div class="placeholder-note" style="margin-bottom:20px">
+    <i data-lucide="info"></i>
+    <span>Esta tela monta as opções visualmente. A geração é disparada por <strong>python main.py</strong>, que lê o
+        <strong>config.toml</strong>. Ajuste e salve em <a class="link" href="/settings"
+            style="color:var(--violet-400)">Configurações</a>.</span>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 280px; align-items:start; gap:28px">
+    <div class="stack gap-20">
+
+        <div class="panel">
+            <div class="panel-head"><i data-lucide="message-square"></i>
+                <h3>1 · Fonte do conteúdo</h3>
+            </div>
+            <div class="panel-pad stack gap-16">
+                <div class="segmented" id="sourceMode">
+                    <button type="button" class="active" data-src="random">Thread aleatória</button>
+                    <button type="button" data-src="specific">Post específico</button>
+                </div>
+                <div>
+                    <label class="field-label">Subreddit</label>
+                    <div class="input-group">
+                        <span class="input-affix"><img
+                                src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}" alt=""></span>
+                        <input class="input" id="cSub" value="AskReddit" placeholder="ex: AskReddit+tifu">
+                    </div>
+                    <div class="form-help">Use “+” para combinar vários subreddits.</div>
+                </div>
+                <div class="row gap-16">
+                    <div style="flex:1">
+                        <label class="field-label">Mínimo de comentários</label>
+                        <div class="range-field"><input type="range" class="range" min="15" max="1000" value="120"><span
+                                class="range-val"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><i data-lucide="mic"></i>
+                <h3>2 · Voz (TTS)</h3>
+            </div>
+            <div class="panel-pad">
+                <div class="choice-grid" id="voiceChoices">
+                    <button type="button" class="choice selected" data-value="tiktok"><span class="check"><i
+                                data-lucide="check"></i></span>
+                        <div class="choice-ico"><i data-lucide="music-2"></i></div>
+                        <div class="choice-title">TikTok</div>
+                        <div class="choice-sub">Voz US</div>
+                    </button>
+                    <button type="button" class="choice" data-value="awspolly">
+                        <div class="choice-ico"><i data-lucide="cloud"></i></div>
+                        <div class="choice-title">AWS Polly</div>
+                        <div class="choice-sub">Matthew</div>
+                    </button>
+                    <button type="button" class="choice" data-value="streamlabspolly">
+                        <div class="choice-ico"><i data-lucide="radio"></i></div>
+                        <div class="choice-title">Streamlabs</div>
+                        <div class="choice-sub">Brian</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><i data-lucide="layers"></i>
+                <h3>3 · Fundo</h3>
+                <div class="right"><a class="link" href="/backgrounds"
+                        style="font-size:13px;font-weight:600;color:var(--violet-400)">Gerenciar</a></div>
+            </div>
+            <div class="panel-pad">
+                <div class="choice-grid" id="bgChoices"></div>
+                <div id="bgChoicesEmpty" class="placeholder-note" style="display:none">
+                    <i data-lucide="info"></i><span>Nenhum fundo cadastrado ainda.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- preview rail -->
+    <div class="stack gap-16" style="position:sticky;top:96px">
+        <div class="panel-pad panel" style="display:flex;flex-direction:column;align-items:center;gap:16px">
+            <div class="t-caps" style="align-self:flex-start">Pré-visualização</div>
+            <div class="phone">
+                <div class="phone-notch"></div>
+                <div class="phone-screen">
+                    <div class="rd-card">
+                        <div class="rd-head"><img src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}"
+                                alt=""> r/<span id="pvSub">AskReddit</span> · 4h</div>
+                        <div class="rd-body">What's a small habit that completely changed your life?</div>
+                        <div class="rd-foot"><span><i data-lucide="arrow-big-up"
+                                    style="width:13px;height:13px;display:inline"></i> 24.5k</span><span>1.2k
+                                comments</span></div>
+                    </div>
+                    <div class="phone-cap">▶ Narração · fundo de gameplay</div>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="generateBtn"><i data-lucide="sparkles"></i> Gerar vídeo</button>
+            <div class="placeholder-note"><i data-lucide="terminal"></i> Roda via <strong>python main.py</strong></div>
+        </div>
+    </div>
+</div>
+
+<!-- "how to generate" modal -->
+<div class="modal-overlay" id="genModal">
+    <div class="modal">
+        <div class="modal-head"><i data-lucide="terminal" style="color:var(--violet-400)"></i>
+            <h3>Gerar o vídeo</h3>
+            <button type="button" class="icon-btn" data-close><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <p class="t-body">A GUI não dispara o render. Para gerar com as opções escolhidas:</p>
+            <ol class="t-body" style="padding-left:18px;display:flex;flex-direction:column;gap:8px">
+                <li>Salve subreddit, voz e fundo em <a class="link" href="/settings"
+                        style="color:var(--violet-400)">Configurações</a>.</li>
+                <li>No terminal, na raiz do projeto, rode:</li>
+            </ol>
+            <div class="input-group" style="align-items:center">
+                <input class="input" id="genCmd" readonly value="python main.py">
+                <button type="button" class="btn btn-sm btn-ghost" id="copyCmd" style="margin:4px"><i
+                        data-lucide="copy"></i></button>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-ghost" data-close>Fechar</button>
+            <a class="btn btn-primary" href="/settings"><i data-lucide="settings"></i> Abrir Configurações</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
+    }
+
+    $(function () {
+        // real backgrounds → choice chips
+        $.getJSON("backgrounds.json", function (bg) {
+            bg = (bg && typeof bg === "object") ? bg : {};
+            delete bg["__comment"];
+            var entries = Object.entries(bg);
+            if (entries.length === 0) { $("#bgChoicesEmpty").show(); return; }
+            $("#bgChoices").html(entries.map(function (e, i) {
+                var name = esc(e[0]), credit = esc(e[1][2]);
+                return '<button type="button" class="choice' + (i === 0 ? ' selected' : '') + '" data-value="' + esc(e[0]) + '">'
+                    + (i === 0 ? '<span class="check"><i data-lucide="check"></i></span>' : '')
+                    + '<div class="choice-ico"><i data-lucide="clapperboard"></i></div>'
+                    + '<div class="choice-title">' + name + '</div>'
+                    + '<div class="choice-sub">' + credit + '</div></button>';
+            }).join(""));
+            if (window.bindChoiceGrids) window.bindChoiceGrids();
+            window.drawIcons();
+        });
+
+        // live subreddit in preview
+        $("#cSub").on("input", function () {
+            $("#pvSub").text($(this).val() || "AskReddit");
+        });
+
+        // generate → show the CLI guidance modal
+        $("#generateBtn").click(function () {
+            document.getElementById("genModal").classList.add("open");
+        });
+
+        // copy command
+        var clip = new ClipboardJS("#copyCmd", { text: function () { return document.getElementById("genCmd").value; } });
+        clip.on("success", function () { window.showToast("Comando copiado"); });
+    });
+</script>
+{% endblock %}

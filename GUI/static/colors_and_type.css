@@ -1,0 +1,98 @@
+/* ============================================================
+   RedditMaker Studio — Design Tokens
+   Theme: Midnight (near-black) + Violet · Typeface: Montserrat
+   ============================================================ */
+
+:root {
+  /* ---- Surfaces (near-black, faint violet cast) ---- */
+  --bg-base:      #0A0810;   /* app background        */
+  --bg-panel:     #100C18;   /* sidebar / rails       */
+  --bg-surface:   #17121F;   /* cards                 */
+  --bg-surface-2: #1F1830;   /* elevated / hover      */
+  --bg-inset:     #0D0A14;   /* inputs / wells        */
+
+  /* ---- Borders & lines ---- */
+  --border:        #271F38;
+  --border-soft:   #1E1830;
+  --border-strong: #3A2E55;
+
+  /* ---- Violet ramp (primary) ---- */
+  --violet-300: #C4B5FD;
+  --violet-400: #A78BFA;
+  --violet-500: #8B5CF6;   /* PRIMARY */
+  --violet-600: #7C3AED;
+  --violet-700: #6D28D9;
+  --violet-glow: #C084FC;
+
+  /* ---- Brand accent (Reddit, used sparingly) ---- */
+  --reddit:      #FF4500;
+  --reddit-soft: #FF6A33;
+
+  /* ---- Text ---- */
+  --text-hi:  #F4F1FA;   /* headings / key values */
+  --text-mid: #ABA2C0;   /* body / labels         */
+  --text-lo:  #6E6685;   /* captions / muted      */
+  --text-dim: #4B4560;   /* disabled / hints      */
+
+  /* ---- Status ---- */
+  --success: #34D399;
+  --success-bg: #0E2A22;
+  --warning: #FBBF24;
+  --warning-bg: #2C2410;
+  --danger:  #F87171;
+  --danger-bg: #2C1416;
+  --info:    #60A5FA;
+
+  /* ---- Typography ---- */
+  --font-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --fs-display: 34px;  --lh-display: 1.1;   --fw-display: 800;
+  --fs-h1: 26px;       --lh-h1: 1.15;       --fw-h1: 700;
+  --fs-h2: 20px;       --lh-h2: 1.2;        --fw-h2: 700;
+  --fs-h3: 16px;       --lh-h3: 1.3;        --fw-h3: 600;
+  --fs-body: 14px;     --lh-body: 1.55;     --fw-body: 500;
+  --fs-sm: 13px;       --lh-sm: 1.45;       --fw-sm: 500;
+  --fs-xs: 11px;       --lh-xs: 1.4;        --fw-xs: 600;
+
+  /* letter-spacing for the all-caps labels that define the look */
+  --ls-caps: 0.14em;
+  --ls-caps-tight: 0.08em;
+
+  /* ---- Radii ---- */
+  --r-xs: 8px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* ---- Elevation (violet-tinted) ---- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 8px 24px -8px rgba(0,0,0,.6);
+  --shadow-lg: 0 24px 60px -20px rgba(0,0,0,.7);
+  --glow-violet: 0 0 0 1px rgba(139,92,246,.35), 0 12px 32px -10px rgba(124,58,237,.55);
+  --glow-violet-soft: 0 8px 30px -12px rgba(139,92,246,.45);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 360ms;
+
+  /* ---- Layout ---- */
+  --sidebar-w: 264px;
+  --topbar-h: 76px;
+  --maxw: 1240px;
+}
+
+/* ============================================================
+   Semantic type helpers
+   ============================================================ */
+.t-display { font-size: var(--fs-display); line-height: var(--lh-display); font-weight: var(--fw-display); letter-spacing: -0.02em; color: var(--text-hi); }
+.t-h1 { font-size: var(--fs-h1); line-height: var(--lh-h1); font-weight: var(--fw-h1); letter-spacing: -0.01em; color: var(--text-hi); }
+.t-h2 { font-size: var(--fs-h2); line-height: var(--lh-h2); font-weight: var(--fw-h2); letter-spacing: -0.01em; color: var(--text-hi); }
+.t-h3 { font-size: var(--fs-h3); line-height: var(--lh-h3); font-weight: var(--fw-h3); color: var(--text-hi); }
+.t-body { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-body); color: var(--text-mid); }
+.t-sm { font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--fw-sm); color: var(--text-mid); }
+.t-caps { font-size: var(--fs-xs); font-weight: 700; letter-spacing: var(--ls-caps); text-transform: uppercase; color: var(--text-lo); }

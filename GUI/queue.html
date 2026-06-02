@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!-- placeholder: a fila não é controlada pela GUI; o bot processa via CLI -->
+<div class="panel">
+    <div class="panel-head"><i data-lucide="loader"></i>
+        <h3>Fila de render</h3>
+        <div class="right"><span class="badge badge-muted">informativo</span></div>
+    </div>
+    <div class="panel-pad stack gap-16">
+        <div class="placeholder-note">
+            <i data-lucide="terminal"></i>
+            <span>O RedditVideoMakerBot processa os vídeos pela linha de comando (<strong>python main.py</strong>),
+                não pela GUI. Esta tela é um espaço reservado para acompanhamento futuro da fila.</span>
+        </div>
+
+        <!-- visual-only sample row, clearly marked as illustration -->
+        <div style="opacity:.5;pointer-events:none">
+            <div class="qitem" style="border:1px solid var(--border-soft);border-radius:var(--r-md)">
+                <div class="qthumb" style="background:linear-gradient(160deg,#3B1D78,#160F28)"><i
+                        data-lucide="film"></i></div>
+                <div class="qmeta">
+                    <div class="qtitle">Exemplo · nenhum render em andamento</div>
+                    <div class="qsub"><img src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}"
+                            style="width:13px;height:13px"> r/AskReddit · ilustração</div>
+                    <div class="progress"><i style="width:0%"></i></div>
+                </div>
+                <div class="qright"><span class="badge badge-muted"><i data-lucide="clock"></i> Em espera</span><span
+                        class="qpct">0%</span></div>
+            </div>
+        </div>
+
+        <div class="row" style="justify-content:flex-end">
+            <a class="btn btn-primary" href="/"><i data-lucide="folder-open"></i> Ver vídeos prontos</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

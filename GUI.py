@@ -20,7 +20,12 @@ HOST = "localhost"
 PORT = 4000
 
 # Configure application
-app = Flask(__name__, template_folder="GUI")
+app = Flask(
+    __name__,
+    template_folder="GUI",
+    static_folder="GUI/static",
+    static_url_path="/static",
+)
 
 # Configure secret key only to use 'flash'
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -38,12 +43,45 @@ def after_request(response):
 # Display index.html
 @app.route("/")
 def index():
-    return render_template("index.html", file="videos.json")
+    return render_template(
+        "index.html",
+        file="videos.json",
+        active="dashboard",
+        page_title="Dashboard",
+        page_sub="Visão geral da sua produção de vídeos",
+    )
 
 
 @app.route("/backgrounds", methods=["GET"])
 def backgrounds():
-    return render_template("backgrounds.html", file="backgrounds.json")
+    return render_template(
+        "backgrounds.html",
+        file="backgrounds.json",
+        active="backgrounds",
+        page_title="Fundos",
+        page_sub="Vídeos de gameplay usados como pano de fundo",
+    )
+
+
+# UI-only screens (the bot itself is launched from the CLI via `python main.py`)
+@app.route("/create", methods=["GET"])
+def create():
+    return render_template(
+        "create.html",
+        active="create",
+        page_title="Criar vídeo",
+        page_sub="Monte um short a partir de uma thread do Reddit",
+    )
+
+
+@app.route("/queue", methods=["GET"])
+def queue():
+    return render_template(
+        "queue.html",
+        active="queue",
+        page_title="Fila de render",
+        page_sub="Acompanhe os vídeos sendo processados",
+    )
 
 
 @app.route("/background/add", methods=["POST"])
@@ -82,7 +120,15 @@ def settings():
         # Change settings
         config = gui.modify_settings(data, config_load, checks)
 
-    return render_template("settings.html", file="config.toml", data=config, checks=checks)
+    return render_template(
+        "settings.html",
+        file="config.toml",
+        data=config,
+        checks=checks,
+        active="settings",
+        page_title="Configurações",
+        page_sub="Credenciais, vozes e preferências de geração",
+    )
 
 
 # Make videos.json accessible
