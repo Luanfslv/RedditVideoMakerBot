@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<article class="stack gap-20 about-content">
+
+    <section class="hero about-hero">
+        <img src="{{ url_for('static', filename='assets/reddit-snoo-white.svg') }}" class="hero-snoo" alt="">
+        <span class="badge badge-violet"><i data-lucide="info"></i> Sobre o projeto</span>
+        <h2 style="margin-top:14px">RedditMaker Studio</h2>
+        <p>Automatize a criação de shorts a partir de threads do Reddit — narração, captura de tela e edição, sem
+            montagem manual.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="/docs"><i data-lucide="book-open"></i> Ver documentação</a>
+            <a class="btn" href="https://github.com/elebumm/RedditVideoMakerBot" target="_blank"
+                rel="noopener noreferrer"><i data-lucide="github"></i> Repositório</a>
+        </div>
+    </section>
+
+    <div class="grid grid-stats">
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="bot"></i></div>
+            <div class="stat-val">Bot</div>
+            <div class="stat-label">RedditVideoMakerBot</div>
+            <span class="stat-delta up"><i data-lucide="terminal"></i> python main.py</span>
+        </div>
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="layout-dashboard"></i></div>
+            <div class="stat-val">Studio</div>
+            <div class="stat-label">Painel web</div>
+            <span class="stat-delta up"><i data-lucide="cloud"></i> config na nuvem</span>
+        </div>
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="mic"></i></div>
+            <div class="stat-val">TTS</div>
+            <div class="stat-label">Narração automática</div>
+            <span class="stat-delta up"><i data-lucide="check"></i> TikTok, Polly…</span>
+        </div>
+        <div class="stat">
+            <div class="stat-ico"><i data-lucide="film"></i></div>
+            <div class="stat-val">FFmpeg</div>
+            <div class="stat-label">Render final</div>
+            <span class="stat-delta up"><i data-lucide="check"></i> MP4 pronto</span>
+        </div>
+    </div>
+
+    <section class="panel">
+        <div class="panel-head"><i data-lucide="sparkles"></i>
+            <h3>O que é este projeto?</h3>
+        </div>
+        <div class="panel-pad stack gap-12">
+            <p class="t-body">O <strong>RedditVideoMakerBot</strong> é um bot open source que transforma posts e
+                comentários do Reddit em vídeos curtos prontos para TikTok, YouTube Shorts e Reels. Ele busca a thread,
+                gera a narração, captura as telas e monta o vídeo final — tudo de forma automatizada.</p>
+            <p class="t-body">O <strong>RedditMaker Studio</strong> é a interface web deste projeto: um painel para
+                configurar credenciais, voz, subreddit, fundos e preferências de geração, sem editar arquivos manualmente.
+                As configurações ficam salvas na nuvem (Supabase) e podem ser acessadas de qualquer lugar.</p>
+            <div class="placeholder-note">
+                <i data-lucide="info"></i>
+                <span>O Studio <strong>configura</strong> o bot; o render pesado (TTS, Playwright, FFmpeg) roda na sua
+                    máquina com <code>python main.py</code>. O vídeo final aparece na pasta <code>results/</code>.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><i data-lucide="workflow"></i>
+            <h3>Como funciona</h3>
+        </div>
+        <div class="panel-pad stack gap-12">
+            <ol class="docs-steps">
+                <li><strong>Configure</strong> — credenciais do Reddit, subreddit, voz e fundo em
+                    <a class="link" href="/settings">Configurações</a>.</li>
+                <li><strong>Busque</strong> — o bot acessa a API do Reddit e seleciona um post (aleatório ou por ID).
+                </li>
+                <li><strong>Narre</strong> — o texto vira áudio via TTS (TikTok, AWS Polly ou outras plataformas).</li>
+                <li><strong>Capture</strong> — Playwright tira screenshots dos comentários com timing sincronizado ao
+                    áudio.</li>
+                <li><strong>Renderize</strong> — FFmpeg combina fundo de gameplay, overlays e narração em um MP4.</li>
+                <li><strong>Publique</strong> — o arquivo fica em <code>results/</code> para upload manual nas redes.
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><i data-lucide="layers"></i>
+            <h3>Arquitetura</h3>
+        </div>
+        <div class="panel-pad stack gap-12">
+            <ul class="docs-list">
+                <li><strong>RedditMaker Studio</strong> — Flask + interface web, hospedado na Cloudflare Workers +
+                    Containers.</li>
+                <li><strong>Supabase</strong> — persistência de <code>config.toml</code>, fundos e metadados de vídeos.
+                </li>
+                <li><strong>RedditVideoMakerBot</strong> — Python 3.10+, PRAW, Playwright, MoviePy/FFmpeg.</li>
+                <li><strong>Assets estáticos</strong> — servidos na edge da Cloudflare para carregamento rápido.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><i data-lucide="heart"></i>
+            <h3>Origem e créditos</h3>
+        </div>
+        <div class="panel-pad stack gap-12">
+            <p class="t-body">Projeto original criado por <strong>Lewis Menelaws</strong> e
+                <a class="link" href="https://tmrrwinc.ca" target="_blank" rel="noopener noreferrer">TMRRW</a>, com
+                contribuições da comunidade open source. A ideia nasceu de automatizar o formato viral de shorts com
+                threads do Reddit — milhões de views com edição mínima.</p>
+            <p class="t-body">O RedditMaker Studio é uma camada de configuração e documentação em cima desse bot,
+                pensada para quem quer usar a ferramenta sem ficar editando TOML na mão.</p>
+            <div class="docs-actions">
+                <a class="docs-action docs-action-primary" href="https://github.com/elebumm/RedditVideoMakerBot"
+                    target="_blank" rel="noopener noreferrer"><i data-lucide="github"></i> GitHub</a>
+                <a class="docs-action" href="/docs"><i data-lucide="book-open"></i> Documentação</a>
+                <a class="docs-action" href="/settings"><i data-lucide="settings"></i> Configurações</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><i data-lucide="shield"></i>
+            <h3>Observações</h3>
+        </div>
+        <div class="panel-pad stack gap-12">
+            <ul class="docs-list">
+                <li>O bot <strong>não faz upload automático</strong> para TikTok, YouTube ou Instagram — você recebe o
+                    arquivo e publica manualmente.</li>
+                <li>Respeite as diretrizes do Reddit e das plataformas de destino ao usar conteúdo de terceiros.</li>
+                <li>Credenciais do Reddit são suas — nunca compartilhe Client Secret ou senha.</li>
+            </ul>
+        </div>
+    </section>
+
+</article>
+
+{% endblock %}

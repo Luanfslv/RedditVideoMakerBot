@@ -1,3 +1,4 @@
+import os
 import webbrowser
 from pathlib import Path
 
@@ -5,6 +6,7 @@ from pathlib import Path
 import tomlkit
 from flask import (
     Flask,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -13,11 +15,10 @@ from flask import (
 )
 
 import utils.gui_utils as gui
+from utils import supabase_store
 
-# Set the hostname
-HOST = "localhost"
-# Set the port number
-PORT = 4000
+HOST = os.getenv("HOST", "127.0.0.1")
+PORT = int(os.getenv("PORT", "4000"))
 
 # Configure application
 app = Flask(
@@ -30,13 +31,37 @@ app = Flask(
 # Configure secret key only to use 'flash'
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
+DOCS_GUIDE_URL = "/docs#gerar-video"
+DOCS_REDDIT_URL = "/docs#credenciais-reddit"
 
-# Ensure responses aren't cached
+
+@app.context_processor
+def inject_docs():
+    return {
+        "docs_guide_url": DOCS_GUIDE_URL,
+        "docs_reddit_url": DOCS_REDDIT_URL,
+    }
+
+
+def _default_config_toml() -> str:
+    path = Path("config.toml")
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+
+    import toml
+
+    from deploy.bootstrap_config import strip_defaults
+
+    return toml.dumps(strip_defaults(toml.load("utils/.config.template.toml")))
+# Cache static assets; HTML stays fresh for config/UI changes
 @app.after_request
 def after_request(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Expires"] = 0
-    response.headers["Pragma"] = "no-cache"
+    if request.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    else:
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Expires"] = 0
+        response.headers["Pragma"] = "no-cache"
     return response
 
 
@@ -84,6 +109,26 @@ def queue():
     )
 
 
+@app.route("/docs")
+def docs():
+    return render_template(
+        "docs.html",
+        active="docs",
+        page_title="Documentação",
+        page_sub="Como usar o RedditMaker Studio e gerar seus vídeos",
+    )
+
+
+@app.route("/about")
+def about():
+    return render_template(
+        "about.html",
+        active="about",
+        page_title="Sobre",
+        page_sub="Conheça o RedditMaker Studio e o RedditVideoMakerBot",
+    )
+
+
 @app.route("/background/add", methods=["POST"])
 def background_add():
     # Get form values
@@ -107,7 +152,7 @@ def background_delete():
 
 @app.route("/settings", methods=["GET", "POST"])
 def settings():
-    config_load = tomlkit.loads(Path("config.toml").read_text())
+    config_load = tomlkit.loads(supabase_store.read_config_toml(_default_config_toml()))
     config = gui.get_config(config_load)
 
     # Get checks for all values
@@ -134,13 +179,12 @@ def settings():
 # Make videos.json accessible
 @app.route("/videos.json")
 def videos_json():
-    return send_from_directory("video_creation/data", "videos.json")
+    return jsonify(supabase_store.read_videos([]))
 
 
-# Make backgrounds.json accessible
 @app.route("/backgrounds.json")
 def backgrounds_json():
-    return send_from_directory("utils", "backgrounds.json")
+    return jsonify(supabase_store.read_backgrounds({}))
 
 
 # Make videos in results folder accessible
@@ -155,8 +199,8 @@ def voices(name):
     return send_from_directory("GUI/voices", name, as_attachment=True)
 
 
-# Run browser and start the app
 if __name__ == "__main__":
-    webbrowser.open(f"http://{HOST}:{PORT}", new=2)
-    print("Website opened in new tab. Refresh if it didn't load.")
-    app.run(port=PORT)
+    if os.getenv("FLASK_ENV") != "production":
+        webbrowser.open(f"http://{HOST}:{PORT}", new=2)
+        print("Website opened in new tab. Refresh if it didn't load.")
+    app.run(host=HOST, port=PORT)

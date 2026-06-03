@@ -1,2 +1,14 @@
-Dockerfile
+.git
+.venv
+.venv-gui
+node_modules
+__pycache__
+*.pyc
 results
+assets/backgrounds
+assets/temp
+.idea
+.vscode
+*.egg-info
+dist
+build

@@ -123,4 +123,21 @@
   const st = document.createElement("style");
   st.textContent = "@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin 1s linear infinite}";
   document.head.appendChild(st);
+
+  /* ---- prefetch internal routes on sidebar hover ---- */
+  $$(".sidebar .nav-item[href^='/']").forEach((link) => {
+    link.addEventListener(
+      "mouseenter",
+      () => {
+        const href = link.getAttribute("href");
+        if (!href || href.includes("#")) return;
+        if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+        const pf = document.createElement("link");
+        pf.rel = "prefetch";
+        pf.href = href;
+        document.head.appendChild(pf);
+      },
+      { once: true, passive: true }
+    );
+  });
 })();

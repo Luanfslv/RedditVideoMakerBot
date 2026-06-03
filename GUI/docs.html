@@ -1,0 +1,316 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="docs-layout">
+    <nav class="docs-toc panel" aria-label="Sumário da documentação">
+        <div class="panel-pad stack gap-4">
+            <div class="t-caps">Sumário</div>
+            <a class="docs-toc-link" href="#sumario">Visão geral</a>
+            <a class="docs-toc-link" href="#primeiros-passos">Primeiros passos</a>
+            <a class="docs-toc-link" href="#credenciais-reddit">Credenciais do Reddit</a>
+            <a class="docs-toc-link" href="#configuracoes">Configurações</a>
+            <a class="docs-toc-link" href="#fundos">Fundos de vídeo</a>
+            <a class="docs-toc-link" href="#criar-video">Montar um vídeo</a>
+            <a class="docs-toc-link" href="#gerar-video">Gerar o vídeo</a>
+            <a class="docs-toc-link" href="#biblioteca">Ver vídeos prontos</a>
+            <a class="docs-toc-link" href="#duvidas">Dúvidas frequentes</a>
+        </div>
+    </nav>
+
+    <article class="stack gap-20 docs-content">
+
+        <section class="hero docs-hero" id="sumario">
+            <img src="{{ url_for('static', filename='assets/reddit-snoo-white.svg') }}" class="hero-snoo" alt="">
+            <span class="badge badge-violet"><i data-lucide="book-open"></i> Guia da plataforma</span>
+            <h2 style="margin-top:14px">Como usar o RedditMaker Studio</h2>
+            <p>Este guia explica o fluxo completo dentro do Studio — configurar, montar e renderizar shorts a
+                partir de threads do Reddit.</p>
+        </section>
+
+        <section class="panel docs-section" id="primeiros-passos">
+            <div class="panel-head"><i data-lucide="rocket"></i>
+                <h3>Primeiros passos</h3>
+            </div>
+            <div class="panel-pad stack gap-12">
+                <p class="t-body">O <strong>RedditMaker Studio</strong> é o painel web onde você configura tudo o que
+                    o bot precisa. As preferências ficam salvas na nuvem (Supabase) e ficam disponíveis sempre que você
+                    abrir o Studio.</p>
+                <ol class="docs-steps">
+                    <li>Acesse o Studio e abra <a class="link" href="/settings">Configurações</a>.</li>
+                    <li>Preencha as <strong>credenciais do Reddit</strong> e ajuste voz, subreddit e fundo.</li>
+                    <li>Clique em <strong>Salvar alterações</strong>.</li>
+                    <li>Na sua máquina (com o projeto instalado), rode o render com <code>python main.py</code>.</li>
+                    <li>Volte ao <a class="link" href="/">Dashboard</a> para acompanhar os vídeos gerados.</li>
+                </ol>
+                <div class="placeholder-note">
+                    <i data-lucide="info"></i>
+                    <span>O Studio <strong>não renderiza</strong> o vídeo no navegador — ele centraliza a configuração.
+                        O processamento pesado (TTS, screenshots, FFmpeg) roda no seu computador via
+                        <code>python main.py</code>.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="credenciais-reddit">
+            <div class="panel-head">
+                <img src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}" style="width:18px;height:18px"
+                    alt="">
+                <h3>Credenciais do Reddit</h3>
+            </div>
+            <div class="panel-pad stack gap-16">
+                <p class="t-body">O bot precisa de um <strong>app de desenvolvedor</strong> na sua conta Reddit. Você
+                    cria esse app no site oficial do Reddit e depois cola os dados aqui no Studio, em
+                    <a class="link" href="/settings">Configurações → Credenciais do Reddit</a>.</p>
+
+                <div class="docs-actions">
+                    <a class="docs-action docs-action-primary" href="https://www.reddit.com/prefs/apps" target="_blank"
+                        rel="noopener noreferrer"><i data-lucide="external-link"></i> Abrir Reddit Apps</a>
+                    <a class="docs-action" href="/settings"><i data-lucide="settings"></i> Ir para Configurações</a>
+                </div>
+
+                <div class="placeholder-note docs-callout-warn">
+                    <i data-lucide="alert-triangle"></i>
+                    <span>Use o tipo <strong>script</strong> (Script for personal use) — <em>não</em> escolha
+                        <strong>web app</strong> nem <strong>installed app</strong>. O bot usa login com usuário e senha
+                        da sua conta, que só funciona com apps do tipo script.</span>
+                </div>
+
+                <p class="docs-step-title">Passo 1 — Abrir a página de apps</p>
+                <ol class="docs-steps">
+                    <li>Entre na sua conta Reddit com <strong>login e senha</strong> (não use login só com Google).</li>
+                    <li>Acesse <a class="link" href="https://www.reddit.com/prefs/apps" target="_blank"
+                            rel="noopener noreferrer">reddit.com/prefs/apps</a> — atalho fixo no botão acima.</li>
+                    <li>Role até a seção <strong>create application</strong> (criar aplicativo).</li>
+                </ol>
+
+                <p class="docs-step-title">Passo 2 — Preencher o formulário</p>
+                <figure class="docs-figure">
+                    <img src="{{ url_for('static', filename='assets/docs/reddit-create-app.png') }}"
+                        alt="Formulário create application do Reddit em reddit.com/prefs/apps">
+                    <figcaption>Tela oficial do Reddit. Selecione <strong>script</strong>, não web app. O redirect uri
+                        pode ser <code>http://localhost</code>.</figcaption>
+                </figure>
+                <ol class="docs-steps" start="4">
+                    <li><strong>name</strong> — qualquer nome (ex.: <code>Videomaker</code> ou
+                        <code>RedditMaker Studio</code>).</li>
+                    <li><strong>App type</strong> — marque <strong>script</strong> (“Script for personal use. Will only
+                        have access to the developers accounts”).</li>
+                    <li><strong>description</strong> — opcional; pode deixar em branco ou escrever “Bot pessoal de
+                        vídeos”.</li>
+                    <li><strong>about url</strong> — opcional; pode usar <code>https://localhost</code>.</li>
+                    <li><strong>redirect uri</strong> — obrigatório mesmo em script; use
+                        <code>http://localhost</code> ou <code>https://localhost</code>.</li>
+                    <li>Complete o reCAPTCHA e clique em <strong>create app</strong>.</li>
+                </ol>
+
+                <p class="docs-step-title">Passo 3 — Copiar Client ID e Client Secret</p>
+                <p class="t-body">Depois de criar, o Reddit mostra um bloco com o nome do app. Anote:</p>
+                <ul class="docs-list">
+                    <li><strong>Client ID</strong> — string curta logo <em>abaixo</em> do nome, sob o texto “personal
+                        use script” (14 caracteres, ex.: <code>abc123XYZ45678</code>).</li>
+                    <li><strong>Client Secret</strong> — campo rotulado <strong>secret</strong> (clique em “edit” se
+                        precisar revelar).</li>
+                </ul>
+
+                <p class="docs-step-title">Passo 4 — Colar no RedditMaker Studio</p>
+                <figure class="docs-figure">
+                    <img src="{{ url_for('static', filename='assets/docs/studio-credenciais.png') }}"
+                        alt="Painel Credenciais do Reddit no RedditMaker Studio">
+                    <figcaption>Os mesmos dados vão nos campos de <a class="link" href="/settings">Configurações</a>.
+                    </figcaption>
+                </figure>
+
+                <div class="docs-map">
+                    <div class="docs-map-card">
+                        <strong>No Reddit (prefs/apps)</strong>
+                        <span>Client ID → texto sob “personal use script”</span>
+                    </div>
+                    <div class="docs-map-arrow"><i data-lucide="arrow-right"></i></div>
+                    <div class="docs-map-card">
+                        <strong>No Studio</strong>
+                        <span>Campo <em>Client ID</em></span>
+                    </div>
+                </div>
+                <div class="docs-map">
+                    <div class="docs-map-card">
+                        <strong>No Reddit</strong>
+                        <span>Campo <em>secret</em></span>
+                    </div>
+                    <div class="docs-map-arrow"><i data-lucide="arrow-right"></i></div>
+                    <div class="docs-map-card">
+                        <strong>No Studio</strong>
+                        <span>Campo <em>Client Secret</em></span>
+                    </div>
+                </div>
+                <div class="docs-map">
+                    <div class="docs-map-card">
+                        <strong>Sua conta Reddit</strong>
+                        <span>Usuário e senha de login</span>
+                    </div>
+                    <div class="docs-map-arrow"><i data-lucide="arrow-right"></i></div>
+                    <div class="docs-map-card">
+                        <strong>No Studio</strong>
+                        <span>Campos <em>Usuário</em> e <em>Senha</em></span>
+                    </div>
+                </div>
+
+                <ol class="docs-steps" start="11">
+                    <li>Abra <a class="link" href="/settings">Configurações</a> e preencha Client ID, Client Secret,
+                        Usuário e Senha.</li>
+                    <li>Se a conta Reddit usa <strong>autenticação em dois fatores (2FA)</strong>, ative o switch
+                        <em>Autenticação 2FA</em>.</li>
+                    <li>Clique em <strong>Salvar alterações</strong>.</li>
+                </ol>
+
+                <div class="placeholder-note">
+                    <i data-lucide="shield"></i>
+                    <span>Nunca compartilhe o Client Secret nem sua senha. Se suspeitar de vazamento, revogue o app em
+                        <a class="link" href="https://www.reddit.com/prefs/apps" target="_blank"
+                            rel="noopener noreferrer">reddit.com/prefs/apps</a> e crie outro.</span>
+                </div>
+
+                <div class="docs-actions">
+                    <a class="docs-action docs-action-primary" href="https://www.reddit.com/prefs/apps" target="_blank"
+                        rel="noopener noreferrer"><i data-lucide="external-link"></i> Abrir Reddit Apps</a>
+                    <a class="docs-action" href="/settings"><i data-lucide="save"></i> Salvar credenciais no Studio</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="configuracoes">
+            <div class="panel-head"><i data-lucide="settings"></i>
+                <h3>Configurações</h3>
+            </div>
+            <div class="panel-pad stack gap-12">
+                <p class="t-body">Em <a class="link" href="/settings">Configurações</a> você define tudo o que o
+                    <code>config.toml</code> usa na hora do render:</p>
+                <ul class="docs-list">
+                    <li><strong>Thread do Reddit</strong> — subreddit(s), post aleatório ou ID fixo, filtros de
+                        comentários.</li>
+                    <li><strong>Geração & vídeo</strong> — tema, opacidade, NSFW, quantidade de execuções por rodada.
+                    </li>
+                    <li><strong>TTS & voz</strong> — plataforma (TikTok, AWS Polly, etc.) e parâmetros de narração.</li>
+                </ul>
+                <p class="t-body">Ao salvar, os dados vão para o Supabase. Na próxima vez que rodar
+                    <code>python main.py</code> localmente, o bot lê o mesmo <code>config.toml</code> sincronizado.</p>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="fundos">
+            <div class="panel-head"><i data-lucide="layers"></i>
+                <h3>Fundos de vídeo</h3>
+            </div>
+            <div class="panel-pad stack gap-12">
+                <p class="t-body">Os fundos são clipes de gameplay (ou similares) que aparecem atrás dos comentários do
+                    Reddit. Gerencie em <a class="link" href="/backgrounds">Fundos</a>:</p>
+                <ul class="docs-list">
+                    <li><strong>Adicionar</strong> — informe URL do YouTube, nome do arquivo e créditos do canal.</li>
+                    <li><strong>Excluir</strong> — remove da biblioteca (não apaga arquivos já baixados localmente).</li>
+                </ul>
+                <p class="t-body">Depois escolha o fundo em Configurações → <em>Fundo do vídeo</em>, ou deixe aleatório.
+                </p>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="criar-video">
+            <div class="panel-head"><i data-lucide="clapperboard"></i>
+                <h3>Montar um vídeo</h3>
+            </div>
+            <div class="panel-pad stack gap-12">
+                <p class="t-body">A tela <a class="link" href="/create">Criar vídeo</a> é um montador visual: escolha
+                    subreddit, voz e fundo para planejar o short.</p>
+                <p class="t-body">Use-a como rascunho. Para aplicar de fato, replique (ou confira) os mesmos valores em
+                    <a class="link" href="/settings">Configurações</a> e salve.</p>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="gerar-video">
+            <div class="panel-head"><i data-lucide="terminal"></i>
+                <h3>Gerar o vídeo</h3>
+            </div>
+            <div class="panel-pad stack gap-12">
+                <p class="t-body">Com as configurações salvas no Studio, o render acontece na sua máquina:</p>
+                <ol class="docs-steps">
+                    <li>Clone ou abra o repositório <strong>RedditVideoMakerBot</strong> localmente.</li>
+                    <li>Instale dependências (<code>pip install -r requirements.txt</code>, Playwright, FFmpeg).</li>
+                    <li>Garanta que o ambiente aponta para o mesmo Supabase (variáveis em <code>.env</code>) ou copie o
+                        <code>config.toml</code> salvo.</li>
+                    <li>Na raiz do projeto, execute:</li>
+                </ol>
+                <div class="input-group docs-cmd">
+                    <input class="input" readonly value="python main.py">
+                </div>
+                <p class="t-body">O bot busca a thread, gera narração, captura screenshots, monta o fundo e exporta o
+                    MP4 em <code>results/</code>. Cada execução pode levar alguns minutos.</p>
+                <div class="placeholder-note">
+                    <i data-lucide="clock"></i>
+                    <span>A <a class="link" href="/queue">Fila de render</a> no Studio é informativa — o progresso real
+                        aparece no terminal durante o <code>python main.py</code>.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="biblioteca">
+            <div class="panel-head"><i data-lucide="folder-open"></i>
+                <h3>Ver vídeos prontos</h3>
+            </div>
+            <div class="panel-pad stack gap-12">
+                <p class="t-body">No <a class="link" href="/">Dashboard</a>, a seção <strong>Vídeos recentes</strong>
+                    lista os shorts já renderizados (metadados em <code>videos.json</code>).</p>
+                <ul class="docs-list">
+                    <li><strong>Baixar</strong> — link direto para o arquivo em <code>results/</code>.</li>
+                    <li><strong>Copiar legenda</strong> — texto pronto para TikTok / Shorts.</li>
+                    <li><strong>Abrir thread</strong> — link para o post original no Reddit.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="duvidas">
+            <div class="panel-head"><i data-lucide="help-circle"></i>
+                <h3>Dúvidas frequentes</h3>
+            </div>
+            <div class="panel-pad stack gap-16">
+                <div>
+                    <div class="docs-faq-q">Salvei no Studio mas o bot não vê minhas configs</div>
+                    <p class="t-body">Confirme que o <code>python main.py</code> roda no mesmo projeto e que o
+                        <code>config.toml</code> local está sincronizado (Supabase) ou foi salvo manualmente.</p>
+                </div>
+                <div>
+                    <div class="docs-faq-q">Posso gerar vídeo só pelo navegador?</div>
+                    <p class="t-body">Ainda não. O Studio configura; o render exige FFmpeg, Playwright e TTS na sua
+                        máquina ou em um servidor com o bot instalado.</p>
+                </div>
+                <div>
+                    <div class="docs-faq-q">Onde ficam os arquivos finais?</div>
+                    <p class="t-body">Na pasta <code>results/</code> do projeto local, organizados por subreddit.</p>
+                </div>
+            </div>
+        </section>
+
+    </article>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        var links = document.querySelectorAll(".docs-toc-link");
+        links.forEach(function (a) {
+            a.addEventListener("click", function (e) {
+                var id = a.getAttribute("href").slice(1);
+                var el = document.getElementById(id);
+                if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    history.replaceState(null, "", "#" + id);
+                }
+            });
+        });
+        if (location.hash) {
+            var target = document.getElementById(location.hash.slice(1));
+            if (target) setTimeout(function () { target.scrollIntoView({ block: "start" }); }, 100);
+        }
+    })();
+</script>
+{% endblock %}

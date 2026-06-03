@@ -12,11 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
-        integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
 </head>
 
 <body>
@@ -55,6 +50,10 @@
                 <div class="nav-label">Conta</div>
                 <a class="nav-item {{ 'active' if active == 'settings' }}" href="/settings"><i
                         data-lucide="settings"></i> Configurações</a>
+                <a class="nav-item {{ 'active' if active == 'docs' }}" href="/docs"><i
+                        data-lucide="book-open"></i> Documentação</a>
+                <a class="nav-item {{ 'active' if active == 'about' }}" href="/about"><i
+                        data-lucide="info"></i> Sobre</a>
             </nav>
 
             <div class="sidebar-spacer"></div>
@@ -115,6 +114,9 @@
 
     {% block modals %}{% endblock %}
 
+    <script src="{{ url_for('static', filename='vendor/lucide.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/clipboard.min.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

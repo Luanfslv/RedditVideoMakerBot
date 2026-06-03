@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements-gui.txt .
+RUN pip install --no-cache-dir -r requirements-gui.txt
+
+COPY GUI.py .
+COPY GUI/ GUI/
+COPY utils/gui_utils.py utils/supabase_store.py utils/backgrounds.json utils/.config.template.toml utils/
+COPY deploy/bootstrap_config.py deploy/
+
+RUN mkdir -p results GUI/voices video_creation/data && \
+    printf '[]' > video_creation/data/videos.json && \
+    python deploy/bootstrap_config.py
+
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV FLASK_ENV=production
+ENV NEXT_PUBLIC_SUPABASE_URL=https://cazlmxyjcwqjultcwdqi.supabase.co
+ENV NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_0mTtfZ80iXMv7Xd5CBnh_Q_EJXD5K2t
+ENV SUPABASE_URL=https://cazlmxyjcwqjultcwdqi.supabase.co
+ENV SUPABASE_KEY=sb_publishable_0mTtfZ80iXMv7Xd5CBnh_Q_EJXD5K2t
+
+EXPOSE 8080
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "GUI:app"]

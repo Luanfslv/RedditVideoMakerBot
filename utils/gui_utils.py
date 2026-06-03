@@ -6,6 +6,8 @@ import toml
 import tomlkit
 from flask import flash
 
+from utils import supabase_store
+
 
 # Get validation checks from template
 def get_checks():
@@ -117,8 +119,7 @@ def modify_settings(data: dict, config_load, checks: dict):
             modify_config(config_load, name, value)
 
     # Save changes in config.toml
-    with Path("config.toml").open("w") as toml_file:
-        toml_file.write(tomlkit.dumps(config_load))
+    supabase_store.write_config_toml(tomlkit.dumps(config_load))
 
     flash("Settings saved!")
 
@@ -127,17 +128,13 @@ def modify_settings(data: dict, config_load, checks: dict):
 
 # Delete background video
 def delete_background(key):
-    # Read backgrounds.json
-    with open("utils/backgrounds.json", "r", encoding="utf-8") as backgrounds:
-        data = json.load(backgrounds)
+    data = supabase_store.read_backgrounds({})
 
-    # Remove background from backgrounds.json
-    with open("utils/backgrounds.json", "w", encoding="utf-8") as backgrounds:
-        if data.pop(key, None):
-            json.dump(data, backgrounds, ensure_ascii=False, indent=4)
-        else:
-            flash("Couldn't find this background. Try refreshing the page.", "error")
-            return
+    if data.pop(key, None) is None:
+        flash("Couldn't find this background. Try refreshing the page.", "error")
+        return
+
+    supabase_store.write_backgrounds(data)
 
     # Remove background video from ".config.template.toml"
     config = tomlkit.loads(Path("utils/.config.template.toml").read_text())
@@ -181,26 +178,21 @@ def add_background(youtube_uri, filename, citation, position):
     filename = filename.replace(" ", "_")
 
     # Check if the background doesn't already exist
-    with open("utils/backgrounds.json", "r", encoding="utf-8") as backgrounds:
-        data = json.load(backgrounds)
+    data = supabase_store.read_backgrounds({})
 
-        # Check if key isn't already taken
-        if filename in list(data.keys()):
-            flash("Background video with this name already exist!", "error")
-            return
+    # Check if key isn't already taken
+    if filename in list(data.keys()):
+        flash("Background video with this name already exist!", "error")
+        return
 
-        # Check if the YouTube URI isn't already used under different name
-        if youtube_uri in [data[i][0] for i in list(data.keys())]:
-            flash("Background video with this YouTube URI is already added!", "error")
-            return
+    # Check if the YouTube URI isn't already used under different name
+    if youtube_uri in [data[i][0] for i in list(data.keys())]:
+        flash("Background video with this YouTube URI is already added!", "error")
+        return
 
-    # Add background video to json file
-    with open("utils/backgrounds.json", "r+", encoding="utf-8") as backgrounds:
-        data = json.load(backgrounds)
-
-        data[filename] = [youtube_uri, filename + ".mp4", citation, position]
-        backgrounds.seek(0)
-        json.dump(data, backgrounds, ensure_ascii=False, indent=4)
+    # Add background video
+    data[filename] = [youtube_uri, filename + ".mp4", citation, position]
+    supabase_store.write_backgrounds(data)
 
     # Add background video to ".config.template.toml"
     config = tomlkit.loads(Path("utils/.config.template.toml").read_text())
