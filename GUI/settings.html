@@ -2,7 +2,7 @@
 {% block content %}
 
 <form id="settingsForm" action="/settings" method="post" novalidate>
-    <div class="stack gap-20" style="max-width:820px">
+    <div class="stack gap-20 settings-form-stack" style="max-width:820px;padding-bottom:8px">
 
         <!-- ============ Reddit credentials ============ -->
         <div class="panel">
@@ -10,7 +10,10 @@
                 <img src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}" style="width:18px;height:18px"
                     alt="">
                 <h3>Credenciais do Reddit</h3>
-                <div class="right">
+                <div class="right row gap-8">
+                    <button type="submit" form="settingsForm" class="btn btn-primary btn-save-inline">
+                        <i data-lucide="save"></i> Salvar
+                    </button>
                     <a class="icon-btn panel-info-btn" href="{{ docs_reddit_url }}"
                         title="Como criar credenciais no Reddit"
                         aria-label="Abrir guia de credenciais do Reddit">
@@ -339,10 +342,11 @@
             </div>
         </div>
 
-        <div class="row" style="justify-content:flex-end;gap:10px">
+        <div class="settings-save-bar" role="region" aria-label="Salvar configurações">
+            <span class="settings-save-hint">As alterações só vão para a nuvem após salvar.</span>
             <button id="defaultSettingsBtn" type="button" class="btn btn-ghost"><i data-lucide="rotate-ccw"></i>
                 Restaurar padrão</button>
-            <button id="submitButton" type="submit" class="btn btn-primary"><i data-lucide="check"></i> Salvar
+            <button id="submitButton" type="submit" class="btn btn-primary"><i data-lucide="save"></i> Salvar
                 alterações</button>
         </div>
     </div>
