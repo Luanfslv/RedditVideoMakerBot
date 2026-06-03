@@ -16,6 +16,7 @@ from flask import (
 
 import utils.gui_utils as gui
 from utils.flask_devvit import register_routes as register_devvit_routes
+from utils.reddit_oauth import register_routes as register_reddit_oauth_routes
 from utils import supabase_store
 
 HOST = os.getenv("HOST", "127.0.0.1")
@@ -33,6 +34,7 @@ app = Flask(
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 register_devvit_routes(app)
+register_reddit_oauth_routes(app)
 
 DOCS_GUIDE_URL = "/docs#gerar-video"
 DOCS_REDDIT_URL = "/docs#credenciais-reddit"
@@ -40,9 +42,14 @@ DOCS_REDDIT_URL = "/docs#credenciais-reddit"
 
 @app.context_processor
 def inject_docs():
+    from utils.reddit_oauth import get_reddit_creds, redirect_uri
+
+    creds = get_reddit_creds()
     return {
         "docs_guide_url": DOCS_GUIDE_URL,
         "docs_reddit_url": DOCS_REDDIT_URL,
+        "reddit_oauth_redirect_uri": redirect_uri(),
+        "reddit_oauth_connected": bool(creds.get("refresh_token")),
     }
 
 

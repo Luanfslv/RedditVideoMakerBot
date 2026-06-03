@@ -4,6 +4,7 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
+    "dev:gui": ".venv-gui/bin/python GUI.py",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

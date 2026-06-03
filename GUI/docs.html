@@ -69,11 +69,17 @@
                     <a class="docs-action" href="/settings"><i data-lucide="settings"></i> Ir para Configurações</a>
                 </div>
 
+                <div class="placeholder-note">
+                    <i data-lucide="link"></i>
+                    <span><strong>Recomendado (OAuth):</strong> crie um app tipo <strong>web app</strong> com redirect
+                        <code>https://videomaker.aceleravaquinha.com.br/auth/reddit/callback</code>, salve Client ID/Secret
+                        e use <a class="link" href="/auth/reddit">Conectar com Reddit</a> em Configurações — sem senha no
+                        painel.</span>
+                </div>
                 <div class="placeholder-note docs-callout-warn">
                     <i data-lucide="alert-triangle"></i>
-                    <span>Use o tipo <strong>script</strong> (Script for personal use) — <em>não</em> escolha
-                        <strong>web app</strong> nem <strong>installed app</strong>. O bot usa login com usuário e senha
-                        da sua conta, que só funciona com apps do tipo script.</span>
+                    <span><strong>Alternativa (legado):</strong> app tipo <strong>script</strong> com usuário e senha —
+                        não use web app nesse modo.</span>
                 </div>
 
                 <p class="docs-step-title">Passo 1 — Abrir a página de apps</p>

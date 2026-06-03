@@ -25,9 +25,23 @@
                 <div class="docs-actions">
                     <a class="docs-action docs-action-primary" href="https://www.reddit.com/prefs/apps" target="_blank"
                         rel="noopener noreferrer"><i data-lucide="external-link"></i> Abrir Reddit Apps</a>
+                    <a class="docs-action" href="/auth/reddit"><i data-lucide="link"></i> Conectar com Reddit</a>
                     <a class="docs-action" href="{{ docs_reddit_url }}"><i data-lucide="book-open"></i> Ver passo a
                         passo</a>
                 </div>
+                {% if reddit_oauth_connected %}
+                <div class="placeholder-note" style="border-color:var(--success)">
+                    <i data-lucide="check-circle-2"></i>
+                    <span>Conta conectada via OAuth. O bot usará o <strong>refresh token</strong> em vez de senha.</span>
+                </div>
+                {% else %}
+                <div class="placeholder-note">
+                    <i data-lucide="info"></i>
+                    <span>App Reddit tipo <strong>web app</strong> com redirect
+                        <code>{{ reddit_oauth_redirect_uri }}</code>. Salve Client ID/Secret e clique em
+                        <strong>Conectar com Reddit</strong>.</span>
+                </div>
+                {% endif %}
             </div>
             <div class="panel-pad stack">
                 <div class="form-row">

@@ -11,6 +11,8 @@ export class RedditMakerGui extends Container {
       "sb_publishable_0mTtfZ80iXMv7Xd5CBnh_Q_EJXD5K2t",
     SUPABASE_URL: "https://cazlmxyjcwqjultcwdqi.supabase.co",
     SUPABASE_KEY: "sb_publishable_0mTtfZ80iXMv7Xd5CBnh_Q_EJXD5K2t",
+    REDDIT_OAUTH_REDIRECT_URI:
+      "https://videomaker.aceleravaquinha.com.br/auth/reddit/callback",
   };
 
   override onStart() {

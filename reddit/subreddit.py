@@ -21,26 +21,39 @@ def get_subreddit_threads(POST_ID: str):
     print_substep("Logging into Reddit.")
 
     content = {}
-    if settings.config["reddit"]["creds"]["2fa"]:
-        print("\nEnter your two-factor authentication code from your authenticator app.\n")
-        code = input("> ")
-        print()
-        pw = settings.config["reddit"]["creds"]["password"]
-        passkey = f"{pw}:{code}"
-    else:
-        passkey = settings.config["reddit"]["creds"]["password"]
-    username = settings.config["reddit"]["creds"]["username"]
+    creds = settings.config["reddit"]["creds"]
+    refresh_token = str(creds.get("refresh_token") or "").strip()
+    passkey = ""
+    if not refresh_token:
+        if settings.config["reddit"]["creds"]["2fa"]:
+            print("\nEnter your two-factor authentication code from your authenticator app.\n")
+            code = input("> ")
+            print()
+            pw = settings.config["reddit"]["creds"]["password"]
+            passkey = f"{pw}:{code}"
+        else:
+            passkey = settings.config["reddit"]["creds"]["password"]
+    username = creds["username"]
     if str(username).casefold().startswith("u/"):
         username = username[2:]
     try:
-        reddit = praw.Reddit(
-            client_id=settings.config["reddit"]["creds"]["client_id"],
-            client_secret=settings.config["reddit"]["creds"]["client_secret"],
-            user_agent="Accessing Reddit threads",
-            username=username,
-            passkey=passkey,
-            check_for_async=False,
-        )
+        if refresh_token:
+            reddit = praw.Reddit(
+                client_id=creds["client_id"],
+                client_secret=creds["client_secret"],
+                refresh_token=refresh_token,
+                user_agent="RedditVideoMakerBot/1.0",
+                check_for_async=False,
+            )
+        else:
+            reddit = praw.Reddit(
+                client_id=creds["client_id"],
+                client_secret=creds["client_secret"],
+                user_agent="Accessing Reddit threads",
+                username=username,
+                passkey=passkey,
+                check_for_async=False,
+            )
     except ResponseException as e:
         if e.response.status_code == 401:
             print("Invalid credentials - please check them in config.toml")
