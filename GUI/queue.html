@@ -1,39 +1,88 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<!-- placeholder: a fila não é controlada pela GUI; o bot processa via CLI -->
 <div class="panel">
     <div class="panel-head"><i data-lucide="loader"></i>
         <h3>Fila de render</h3>
-        <div class="right"><span class="badge badge-muted">informativo</span></div>
+        <div class="right"><span class="badge badge-violet" id="queueCount">—</span></div>
     </div>
     <div class="panel-pad stack gap-16">
         <div class="placeholder-note">
-            <i data-lucide="terminal"></i>
-            <span>O RedditVideoMakerBot processa os vídeos pela linha de comando (<strong>python main.py</strong>),
-                não pela GUI. Esta tela é um espaço reservado para acompanhamento futuro da fila.</span>
+            <i data-lucide="plug"></i>
+            <span>Threads enviadas pelo <strong>app Devvit</strong> aparecem aqui. O render roda na sua máquina com
+                <code>python main.py --from-queue</code>.</span>
         </div>
 
-        <!-- visual-only sample row, clearly marked as illustration -->
-        <div style="opacity:.5;pointer-events:none">
-            <div class="qitem" style="border:1px solid var(--border-soft);border-radius:var(--r-md)">
-                <div class="qthumb" style="background:linear-gradient(160deg,#3B1D78,#160F28)"><i
-                        data-lucide="film"></i></div>
-                <div class="qmeta">
-                    <div class="qtitle">Exemplo · nenhum render em andamento</div>
-                    <div class="qsub"><img src="{{ url_for('static', filename='assets/reddit-snoo.svg') }}"
-                            style="width:13px;height:13px"> r/AskReddit · ilustração</div>
-                    <div class="progress"><i style="width:0%"></i></div>
-                </div>
-                <div class="qright"><span class="badge badge-muted"><i data-lucide="clock"></i> Em espera</span><span
-                        class="qpct">0%</span></div>
-            </div>
+        <div id="queueList" class="stack gap-10"></div>
+        <div id="queueEmpty" class="placeholder-note" style="display:none">
+            <i data-lucide="inbox"></i>
+            <span>Nenhum item na fila. No Reddit, use o menu do post → <strong>Enviar para RedditMaker Studio</strong>.</span>
         </div>
 
-        <div class="row" style="justify-content:flex-end">
-            <a class="btn btn-primary" href="/"><i data-lucide="folder-open"></i> Ver vídeos prontos</a>
+        <div class="docs-actions">
+            <a class="docs-action" href="/docs#devvit"><i data-lucide="book-open"></i> Configurar Devvit</a>
+            <a class="docs-action docs-action-primary" href="/"><i data-lucide="folder-open"></i> Ver vídeos prontos</a>
         </div>
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const statusLabel = {
+        pending: { text: 'Pendente', badge: 'badge-warning' },
+        processing: { text: 'Processando', badge: 'badge-violet' },
+        done: { text: 'Concluído', badge: 'badge-success' },
+        failed: { text: 'Falhou', badge: 'badge-muted' },
+    };
+
+    async function loadQueue() {
+        const list = document.getElementById('queueList');
+        const empty = document.getElementById('queueEmpty');
+        const count = document.getElementById('queueCount');
+        try {
+            const res = await fetch('/api/render-queue');
+            const data = await res.json();
+            const jobs = data.jobs || [];
+            const pending = jobs.filter(j => j.status === 'pending').length;
+            count.textContent = pending ? `${pending} pendente(s)` : 'vazia';
+
+            if (!jobs.length) {
+                list.innerHTML = '';
+                empty.style.display = 'flex';
+                return;
+            }
+            empty.style.display = 'none';
+            list.innerHTML = jobs.map(job => {
+                const st = statusLabel[job.status] || statusLabel.pending;
+                const when = job.created_at ? new Date(job.created_at).toLocaleString('pt-BR') : '';
+                return `<div class="qitem" style="border:1px solid var(--border-soft);border-radius:var(--r-md)">
+                    <div class="qthumb" style="background:linear-gradient(160deg,#3B1D78,#160F28)"><i data-lucide="film"></i></div>
+                    <div class="qmeta">
+                        <div class="qtitle">${escapeHtml(job.title || job.thread_id)}</div>
+                        <div class="qsub"><img src="/static/assets/reddit-snoo.svg" style="width:13px;height:13px">
+                            ${escapeHtml(job.source || 'devvit')} · ${escapeHtml(when)}</div>
+                        ${job.error_message ? `<div class="qsub" style="color:var(--danger)">${escapeHtml(job.error_message)}</div>` : ''}
+                    </div>
+                    <div class="qright"><span class="badge ${st.badge}">${st.text}</span></div>
+                </div>`;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        } catch (e) {
+            list.innerHTML = '';
+            empty.style.display = 'flex';
+            empty.querySelector('span').textContent = 'Não foi possível carregar a fila.';
+        }
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    loadQueue();
+    setInterval(loadQueue, 15000);
+})();
+</script>
 {% endblock %}

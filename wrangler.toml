@@ -7,7 +7,7 @@ account_id = "760c98ab7a66da86b7a277e3c9365293"
 
 [vars]
 # Bump to spin up a fresh GUI container after image updates (old instances sleep after 1h).
-GUI_CONTAINER_ID = "5c5b655f"
+GUI_CONTAINER_ID = "devvit-queue-v1"
 
 [observability]
 enabled = true

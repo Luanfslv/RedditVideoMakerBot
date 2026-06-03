@@ -15,6 +15,7 @@ from flask import (
 )
 
 import utils.gui_utils as gui
+from utils.flask_devvit import register_routes as register_devvit_routes
 from utils import supabase_store
 
 HOST = os.getenv("HOST", "127.0.0.1")
@@ -30,6 +31,8 @@ app = Flask(
 
 # Configure secret key only to use 'flash'
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
+register_devvit_routes(app)
 
 DOCS_GUIDE_URL = "/docs#gerar-video"
 DOCS_REDDIT_URL = "/docs#credenciais-reddit"

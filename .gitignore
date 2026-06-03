@@ -242,10 +242,12 @@ reddit-bot-351418-5560ebc49cac.json
 /.idea
 *.pyc
 video_creation/data/videos.json
+video_creation/data/render_queue.json
 video_creation/data/envvars.txt
 
 config.toml
 *.exe
 
-# Node.js (Wrangler / Cloudflare)
+# Node.js (Wrangler / Cloudflare / Devvit)
 node_modules/
+devvit/node_modules/

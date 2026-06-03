@@ -13,6 +13,7 @@
             <a class="docs-toc-link" href="#criar-video">Montar um vídeo</a>
             <a class="docs-toc-link" href="#gerar-video">Gerar o vídeo</a>
             <a class="docs-toc-link" href="#biblioteca">Ver vídeos prontos</a>
+            <a class="docs-toc-link" href="#devvit">Integração Devvit</a>
             <a class="docs-toc-link" href="#duvidas">Dúvidas frequentes</a>
         </div>
     </nav>
@@ -262,6 +263,63 @@
                     <li><strong>Copiar legenda</strong> — texto pronto para TikTok / Shorts.</li>
                     <li><strong>Abrir thread</strong> — link para o post original no Reddit.</li>
                 </ul>
+            </div>
+        </section>
+
+        <section class="panel docs-section" id="devvit">
+            <div class="panel-head"><i data-lucide="plug"></i>
+                <h3>Integração Devvit (híbrido)</h3>
+            </div>
+            <div class="panel-pad stack gap-16">
+                <p class="t-body">O app <strong>Devvit</strong> lê a thread no Reddit e envia os dados para o Studio. O
+                    render pesado continua na sua máquina — você não troca o PRAW por Devvit no PC, combina os dois.</p>
+
+                <div class="docs-actions">
+                    <a class="docs-action" href="/queue"><i data-lucide="loader"></i> Ver fila de render</a>
+                    <a class="docs-action docs-action-primary" href="https://developers.reddit.com" target="_blank"
+                        rel="noopener noreferrer"><i data-lucide="external-link"></i> Reddit Developers</a>
+                </div>
+
+                <p class="docs-step-title">1 — Chave de ingestão no Studio</p>
+                <ol class="docs-steps">
+                    <li>Gere uma chave: <code>openssl rand -hex 32</code></li>
+                    <li>Defina <code>STUDIO_INGEST_SECRET</code> no servidor (Wrangler secret ou <code>.env</code> local)</li>
+                    <li>Confira: <code>GET /api/devvit/health</code> deve retornar <code>ingest_configured: true</code></li>
+                </ol>
+
+                <p class="docs-step-title">2 — Instalar o app Devvit</p>
+                <ol class="docs-steps">
+                    <li>Na pasta <code>devvit/</code>: <code>npm install</code></li>
+                    <li>Crie o app em <a class="link" href="https://developers.reddit.com" target="_blank"
+                            rel="noopener noreferrer">developers.reddit.com</a> (ou use o link do painel
+                        <code>npm create devvit@latest</code>)</li>
+                    <li>Em <code>devvit/devvit.json</code>, confira o domínio do Studio em
+                        <code>permissions.http.domains</code></li>
+                    <li>Instale o app no subreddit de teste e configure <strong>studioUrl</strong> +
+                        <strong>ingestSecret</strong> (mesma chave do passo 1)</li>
+                </ol>
+
+                <p class="docs-step-title">3 — Enviar uma thread</p>
+                <ol class="docs-steps">
+                    <li>No Reddit: abra um post → menu <strong>⋯</strong> →
+                        <strong>Enviar para RedditMaker Studio</strong></li>
+                    <li>No Studio: <a class="link" href="/queue">Fila de render</a> mostra o item como
+                        <em>pendente</em></li>
+                </ol>
+
+                <p class="docs-step-title">4 — Renderizar na máquina</p>
+                <ol class="docs-steps">
+                    <li>Com <code>config.toml</code> e dependências prontos:</li>
+                </ol>
+                <pre class="docs-cmd panel-pad" style="font-family:monospace;font-size:13px">python main.py --from-queue</pre>
+                <p class="t-body">O bot usa o JSON da fila (título, comentários, IDs) em vez de buscar de novo com PRAW.
+                    Screenshots e FFmpeg rodam como sempre.</p>
+
+                <div class="placeholder-note">
+                    <i data-lucide="info"></i>
+                    <span>Sem Devvit, continue usando <code>python main.py</code> normalmente (PRAW + credenciais em
+                        Configurações).</span>
+                </div>
             </div>
         </section>
 

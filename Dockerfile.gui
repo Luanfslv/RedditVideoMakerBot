@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements-gui.txt
 
 COPY GUI.py .
 COPY GUI/ GUI/
-COPY utils/gui_utils.py utils/supabase_store.py utils/backgrounds.json utils/.config.template.toml utils/
+COPY utils/gui_utils.py utils/supabase_store.py utils/render_queue.py utils/thread_payload.py utils/flask_devvit.py utils/backgrounds.json utils/.config.template.toml utils/
 COPY deploy/bootstrap_config.py deploy/
 
 RUN mkdir -p results GUI/voices video_creation/data && \

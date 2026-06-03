@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import math
 import sys
 from os import name
@@ -9,6 +10,7 @@ from typing import Dict, NoReturn
 from prawcore import ResponseException
 
 from reddit.subreddit import get_subreddit_threads
+from utils.render_queue import claim_next, mark_done, mark_failed
 from utils import settings
 from utils.cleanup import cleanup
 from utils.console import print_markdown, print_step, print_substep
@@ -46,9 +48,10 @@ reddit_id: str
 reddit_object: Dict[str, str | list]
 
 
-def main(POST_ID=None) -> None:
+def run_pipeline(reddit_object_in: Dict) -> None:
+    """Renderiza um vídeo a partir de um reddit_object já montado (PRAW ou Devvit)."""
     global reddit_id, reddit_object
-    reddit_object = get_subreddit_threads(POST_ID)
+    reddit_object = reddit_object_in
     reddit_id = extract_id(reddit_object)
     print_substep(f"Thread ID is {reddit_id}", style="bold blue")
     length, number_of_comments = save_text_to_mp3(reddit_object)
@@ -62,6 +65,32 @@ def main(POST_ID=None) -> None:
     download_background_audio(bg_config["audio"])
     chop_background(bg_config, length, reddit_object)
     make_final_video(number_of_comments, length, reddit_object, bg_config)
+
+
+def main(POST_ID=None) -> None:
+    global reddit_id, reddit_object
+    reddit_object = get_subreddit_threads(POST_ID)
+    run_pipeline(reddit_object)
+
+
+def main_from_queue() -> bool:
+    """Processa o próximo item pendente na fila (enviado pelo Devvit / Studio)."""
+    job = claim_next()
+    if not job:
+        print_substep("Nenhum item pendente na fila de render.", style="bold red")
+        return False
+
+    job_id = job["id"]
+    title = job.get("title") or job.get("thread_id")
+    print_step(f"Fila: renderizando «{title}» (job {job_id})")
+    try:
+        run_pipeline(job["reddit_object"])
+        mark_done(job_id)
+        print_substep("Fila: item concluído.", style="bold green")
+        return True
+    except Exception as err:
+        mark_failed(job_id, str(err))
+        raise
 
 
 def run_many(times) -> None:
@@ -83,6 +112,14 @@ def shutdown() -> NoReturn:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="RedditVideoMakerBot")
+    parser.add_argument(
+        "--from-queue",
+        action="store_true",
+        help="Renderiza o próximo vídeo da fila (enviado pelo Devvit / Studio)",
+    )
+    cli_args, _unknown = parser.parse_known_args()
+
     if sys.version_info.major != 3 or sys.version_info.minor not in [10, 11, 12]:
         print(
             "Hey! Congratulations, you've made it so far (which is pretty rare with no Python 3.10). Unfortunately, this program only works on Python 3.10. Please install Python 3.10 and try again."
@@ -105,7 +142,10 @@ if __name__ == "__main__":
         )
         sys.exit()
     try:
-        if config["reddit"]["thread"]["post_id"]:
+        if cli_args.from_queue:
+            if not main_from_queue():
+                sys.exit(0)
+        elif config["reddit"]["thread"]["post_id"]:
             for index, post_id in enumerate(config["reddit"]["thread"]["post_id"].split("+")):
                 index += 1
                 print_step(

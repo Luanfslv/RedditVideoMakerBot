@@ -1,0 +1,19 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "redditmaker-studio",
+  "permissions": {
+    "http": {
+      "enable": true,
+      "domains": [
+        "redditmaker-studio.tech-760.workers.dev",
+        "localhost"
+      ]
+    },
+    "reddit": {
+      "enable": true
+    }
+  },
+  "dev": {
+    "subreddit": "redditmaker_dev"
+  }
+}
