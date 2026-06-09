@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import argparse
+import json
 import math
+import re
 import sys
+import uuid
 from os import name
 from pathlib import Path
 from subprocess import Popen
@@ -48,10 +51,24 @@ reddit_id: str
 reddit_object: Dict[str, str | list]
 
 
+def _coerce_thread_post(reddit_object_in: Dict) -> Dict:
+    """storymodemethod==1 espera thread_post como LISTA de sentenças (imagemaker + TTS
+    iteram sobre ela). Fontes externas (fila/Devvit/--from-text) entregam string crua.
+    Converte uma vez, no ponto central, sem mexer no contrato de PRAW (já lista)."""
+    s = settings.config["settings"]
+    if s["storymode"] and s["storymodemethod"] == 1:
+        post = reddit_object_in.get("thread_post")
+        if isinstance(post, str) and post.strip():
+            from utils.posttextparser import posttextparser
+
+            reddit_object_in["thread_post"] = posttextparser(post)
+    return reddit_object_in
+
+
 def run_pipeline(reddit_object_in: Dict) -> None:
     """Renderiza um vídeo a partir de um reddit_object já montado (PRAW ou Devvit)."""
     global reddit_id, reddit_object
-    reddit_object = reddit_object_in
+    reddit_object = _coerce_thread_post(reddit_object_in)
     reddit_id = extract_id(reddit_object)
     print_substep(f"Thread ID is {reddit_id}", style="bold blue")
     length, number_of_comments = save_text_to_mp3(reddit_object)
@@ -93,6 +110,51 @@ def main_from_queue() -> bool:
         raise
 
 
+def main_from_text(path: str) -> None:
+    """Renderiza um vídeo story-mode a partir de um JSON local, SEM Reddit API,
+    SEM navegador headless e SEM login. Formato do arquivo:
+
+        {"title": "...", "text": "história aqui...", "id": "opcional"}
+
+    Use com storymode=true + storymodemethod=1 no config.toml. Render 100% local
+    (PIL + ffmpeg + TTS), hospedável em qualquer container sem Chromium nem credenciais
+    do Reddit."""
+    file_path = Path(path)
+    if not file_path.exists():
+        print_substep(f"Arquivo não encontrado: {path}", style="bold red")
+        sys.exit(1)
+
+    data = json.loads(file_path.read_text(encoding="utf-8"))
+    title = str(data.get("title") or data.get("thread_title") or "").strip()
+    text = str(data.get("text") or data.get("thread_post") or "").strip()
+    if not title or not text:
+        print_substep("JSON precisa de 'title' e 'text' não-vazios.", style="bold red")
+        sys.exit(1)
+
+    if not settings.config["settings"]["storymode"]:
+        print_substep(
+            "Aviso: storymode=false no config.toml. --from-text só renderiza a história; "
+            "ative storymode=true (e storymodemethod=1) para hosting sem navegador.",
+            style="bold yellow",
+        )
+
+    thread_id = re.sub(r"[^\w-]", "", str(data.get("id") or data.get("thread_id") or "")).strip()
+    if not thread_id:
+        slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:40]
+        thread_id = slug or uuid.uuid4().hex[:10]
+
+    reddit_object = {
+        "thread_id": thread_id,
+        "thread_title": title,
+        "thread_url": str(data.get("url") or "").strip(),
+        "is_nsfw": bool(data.get("is_nsfw", False)),
+        "comments": [],
+        "thread_post": text,  # vira lista em run_pipeline quando storymodemethod==1
+    }
+    print_step(f"Texto local: renderizando «{title}» (id {thread_id})")
+    run_pipeline(reddit_object)
+
+
 def run_many(times) -> None:
     for x in range(1, times + 1):
         print_step(
@@ -118,6 +180,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Renderiza o próximo vídeo da fila (enviado pelo Devvit / Studio)",
     )
+    parser.add_argument(
+        "--from-text",
+        dest="from_text",
+        metavar="FILE",
+        help="Renderiza story-mode a partir de um JSON local {title,text} — sem Reddit API, sem navegador, sem login",
+    )
     cli_args, _unknown = parser.parse_known_args()
 
     if sys.version_info.major != 3 or sys.version_info.minor not in [10, 11, 12]:
@@ -142,7 +210,9 @@ if __name__ == "__main__":
         )
         sys.exit()
     try:
-        if cli_args.from_queue:
+        if cli_args.from_text:
+            main_from_text(cli_args.from_text)
+        elif cli_args.from_queue:
             if not main_from_queue():
                 sys.exit(0)
         elif config["reddit"]["thread"]["post_id"]:
