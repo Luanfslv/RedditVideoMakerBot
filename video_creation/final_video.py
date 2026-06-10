@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 import re
+import subprocess
 import tempfile
 import textwrap
 import threading
@@ -24,6 +25,28 @@ from utils.thumbnail import create_thumbnail
 from utils.videos import save_data
 
 console = Console()
+
+
+def _ffmpeg_has_filter(name: str) -> bool:
+    """Checa se o ffmpeg instalado tem um filtro (ex.: 'drawtext' exige libfreetype).
+    Builds mínimos de hosting frequentemente não trazem drawtext; sem isso o render
+    inteiro morre só por causa do watermark de crédito. Cacheado por processo."""
+    cache = _ffmpeg_has_filter._cache
+    if name not in cache:
+        try:
+            out = subprocess.run(
+                ["ffmpeg", "-hide_banner", "-filters"],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            ).stdout
+            cache[name] = any(line.split()[1:2] == [name] for line in out.splitlines() if line.strip())
+        except Exception:
+            cache[name] = False
+    return cache[name]
+
+
+_ffmpeg_has_filter._cache = {}
 
 
 class ProgressFfmpeg(threading.Thread):
@@ -93,7 +116,7 @@ def prepare_background(reddit_id: str, W: int, H: int) -> str:
             output_path,
             an=None,
             **{
-                "c:v": "h264_nvenc",
+                "c:v": "libx264",
                 "b:v": "20M",
                 "b:a": "192k",
                 "threads": multiprocessing.cpu_count(),
@@ -224,7 +247,11 @@ def make_final_video(
 
     print_step("Creating the final video 🎥")
 
-    background_clip = ffmpeg.input(prepare_background(reddit_id, W=W, H=H))
+    # Escala o fundo para W×H ANTES dos overlays. Os cards são dimensionados em função de W
+    # (screenshot_width = W*0.45); se o fundo continuar no tamanho nativo cropado (ex.: bg
+    # 360p → ~202px de largura), o overlay centralizado com x=(main_w-overlay_w)/2 fica
+    # negativo e corta os cards. Escalando aqui, qualquer resolução de fundo renderiza certo.
+    background_clip = ffmpeg.input(prepare_background(reddit_id, W=W, H=H)).filter("scale", W, H)
 
     # Gather all audio clips
     audio_clips = list()
@@ -405,15 +432,21 @@ def make_final_video(
             print_substep(f"Thumbnail - Building Thumbnail in assets/temp/{reddit_id}/thumbnail.png")
 
     text = f"Background by {background_config['video'][2]}"
-    background_clip = ffmpeg.drawtext(
-        background_clip,
-        text=text,
-        x=f"(w-text_w)",
-        y=f"(h-text_h)",
-        fontsize=5,
-        fontcolor="White",
-        fontfile=os.path.join("fonts", "Roboto-Regular.ttf"),
-    )
+    if _ffmpeg_has_filter("drawtext"):
+        background_clip = ffmpeg.drawtext(
+            background_clip,
+            text=text,
+            x=f"(w-text_w)",
+            y=f"(h-text_h)",
+            fontsize=5,
+            fontcolor="White",
+            fontfile=os.path.join("fonts", "Roboto-Regular.ttf"),
+        )
+    else:
+        print_substep(
+            "ffmpeg sem filtro 'drawtext' (libfreetype ausente) — pulando watermark de crédito.",
+            style="yellow",
+        )
     background_clip = background_clip.filter("scale", W, H)
     print_step("Rendering the video 🎥")
     from tqdm import tqdm
@@ -438,7 +471,7 @@ def make_final_video(
                 path,
                 f="mp4",
                 **{
-                    "c:v": "h264_nvenc",
+                    "c:v": "libx264",
                     "b:v": "20M",
                     "b:a": "192k",
                     "threads": multiprocessing.cpu_count(),
@@ -468,7 +501,7 @@ def make_final_video(
                     path,
                     f="mp4",
                     **{
-                        "c:v": "h264_nvenc",
+                        "c:v": "libx264",
                         "b:v": "20M",
                         "b:a": "192k",
                         "threads": multiprocessing.cpu_count(),

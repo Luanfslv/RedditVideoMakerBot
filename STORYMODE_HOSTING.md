@@ -22,8 +22,27 @@ podem ser puladas (`playwright install` não é necessário neste modo).
 storymode = true
 storymodemethod = 1
 
+[settings.background]
+background_audio_volume = 0   # 0 = sem música de fundo (não baixa lofi do YouTube)
+
 [settings.tts]
-voice_choice = "GoogleTranslate"
+voice_choice = "googletranslate"   # minúsculo: precisa bater com options do template
+```
+
+### Por que o validador exige creds mesmo no story-mode
+
+`check_toml` valida o `config.toml` inteiro no boot, ANTES de despachar `--from-text`.
+Campo obrigatório vazio dispara `input()` → `EOFError` em headless. Por isso o story-mode
+precisa de **placeholders** que passem na validação (nunca usados, sem PRAW):
+
+```toml
+[reddit.creds]
+client_id = "storyhostplaceholder"            # 12–30 chars
+client_secret = "storyhostplaceholdersecret00" # 20–40 chars
+username = "storyhost"                          # 3–20 chars
+password = "storyhostpass"                      # >= 8 chars
+2fa = false
+refresh_token = ""                              # precisa existir como chave
 ```
 
 ## Entrada: JSON local
@@ -59,6 +78,33 @@ Saída em `results/`.
 - `ffmpeg` no PATH (o repo tenta instalar via `utils/ffmpeg_install.py`).
 - Rede só para: gTTS (áudio) e download do vídeo/áudio de fundo (YouTube) — cacheável.
 
+## Fundo (background)
+
+Por padrão `download_background_video` baixa do YouTube via `yt_dlp` (minecraft, ~grande).
+Para evitar isso em hosting/CI, coloque seu próprio arquivo no caminho exato esperado —
+o download é pulado se o arquivo já existir:
+
+```
+assets/backgrounds/video/<credit>-<filename>     # ex.: bbswitzer-parkour.mp4
+assets/backgrounds/audio/<credit>-<filename>     # só se background_audio_volume != 0
+```
+
+`<credit>` e `<filename>` vêm de `utils/background_videos.json` / `background_audios.json`.
+
+## Compatibilidade de ffmpeg (corrigido)
+
+- **Encoder**: era `h264_nvenc` (GPU NVIDIA) → trocado para `libx264` (CPU, universal).
+  NVENC falha em Mac e na maioria dos servidores sem GPU NVIDIA.
+- **drawtext**: o watermark de crédito usa o filtro `drawtext` (exige `libfreetype`).
+  Agora é opcional (`final_video._ffmpeg_has_filter`) — se o ffmpeg não tiver, o render
+  segue e só pula o watermark, em vez de morrer.
+
+## Peso de dependências (corrigido)
+
+`torch` + `transformers` (~2GB) eram importados no boot (via `ai_methods` no topo de
+`subreddit.py`) mesmo sem usar AI sort. Agora são **lazy** (só no branch `ai_similarity`).
+Hosting story-mode não precisa instalar torch/transformers.
+
 ## Notas
 
 - O texto da história default é inglês (gTTS en). Para PT-BR, ajustar a língua do gTTS /
@@ -67,3 +113,10 @@ Saída em `results/`.
   Devvit — `main._coerce_thread_post`.
 - Caminho de screenshots (`storymodemethod=0` ou modo comentários) continua existindo e
   segue exigindo navegador + login; não use em hosting sem conta descartável.
+
+## Verificado
+
+Render real concluído nesta máquina (macOS, ffmpeg 8.0.1, Python 3.11, sem
+torch/transformers): `python main.py --from-text video_creation/data/story_sample.json`
+→ `results/AskReddit/AITA for telling my brother the truth at dinner.mp4`
+(1080×1920, h264+aac, 52s). Card de título + cards de frase + narração gTTS, tudo local.
